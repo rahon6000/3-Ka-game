@@ -9,6 +9,7 @@ export let camera: THREE.PerspectiveCamera;
 export let scene: THREE.Scene;
 export let renderer: THREE.WebGLRenderer;
 
+const zAxis = new THREE.Vector3(0,0,1); 
 
 let debTab: HTMLCollectionOf<Element> = document.getElementsByClassName("debTab");
 
@@ -22,7 +23,7 @@ function init() {
 
   // camera = new THREE.OrthographicCamera();
   camera = new THREE.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 1, 10000);
-  camera.position.x = -900;
+  camera.position.x = 0;
   camera.position.y = -900;
   camera.position.z = 900;
   // camera.rotation.setFromQuaternion(
@@ -40,7 +41,7 @@ function init() {
   scene.add(light);
   let border = createBorder(PHYS.side, PHYS.height, scene);
 
-  let mesh = createSph(20, 'test', [0, 0, 1000], [0, 0, 0]);
+  let mesh = createSph(20, 'test', [0, 0, 0.5*PHYS.height], [0, 0, 0]);
   scene.add(mesh);
 
   // Finally, (prepare) Renderer
@@ -102,28 +103,32 @@ function createBorder(side: number, height: number, scene: THREE.Scene) { // sho
     color: new THREE.Color("white")
   })
   let mesh = new THREE.Mesh(myGeo, material);
-  mesh.position.set(0,0,(thickness-height));
+  mesh.position.set(0,0,(thickness- 0.5 * height));
   // const physicalElem = new PHYS.Physical(mesh, [0,0,0], true);
   scene.add(mesh);
   //
 
-  let distance = (side - thickness);
+  let distance = (side - thickness * 0.5);
   let sideArray = [[0, distance],
                     [0, -distance],
                     [distance, 0],
                     [-distance, 0]];
+  let aspectArray = [[2 * side, height],
+                    [2 * side, height],
+                    [height, 2 * side],
+                    [height, 2 * side]];
   let rotaionArray = [new THREE.Vector3(1,0,0),
                       new THREE.Vector3(1,0,0),
                       new THREE.Vector3(0,1,0),
                       new THREE.Vector3(0,1,0)];
   for(let i = 0; i < 4; i ++){
-    let myGeo1 = new THREE.BoxGeometry(side,side,thickness,1,1,1);
+    let myGeo1 = new THREE.BoxGeometry(aspectArray[i][0],aspectArray[i][1],thickness,1,1,1);
     let material1 = new THREE.MeshBasicMaterial({ 
       opacity: opacity,
       transparent: true,
       color: new THREE.Color("white")
     })
-    let mesh1 = new THREE.Mesh(myGeo, material);
+    let mesh1 = new THREE.Mesh(myGeo1, material1);
     mesh1.position.set(0,0,-height);
     mesh1.rotateOnWorldAxis(rotaionArray[i], 0.5 * Math.PI);
     // const physicalElem1 = new PHYS.Physical(mesh1, [0,0,0], true);
@@ -157,8 +162,8 @@ function render() {
   UI.debugging(debTab);
   camera.lookAt(scene.position);
   camera.rotateOnWorldAxis(
-    new THREE.Vector3().subVectors(camera.position, scene.position).normalize(),
-    ((UI.getAngle - 0.32) * Math.PI));
+    new THREE.Vector3(0,0,1),
+    ((UI.getAngle ) * Math.PI));
 
   renderer.render(scene, camera); // OF COURSE we use prepared renderer.
   

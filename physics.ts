@@ -1,14 +1,17 @@
 import * as THREE from "three";
-
-export let G = new THREE.Vector3(0, 0, -0.98);
+let gravity = 0.098; // At what framerate? 120?
+export let G = new THREE.Vector3(0, 0, -gravity);
 
 export let sphs: Physical[] = []; // managing all fruits
 
-export let side: number = 200;
-export let height: number = 200;
+export let side: number = 100;
+export let height: number = 300;
+let halfHeight = height* 0.5;
 
-let floorElasticity = 0.5;
+let floorElasticity = 0.48;
 let sideWallElasticity = 0.9;
+
+let stillness = 4 * gravity;
 
 // should consider frame
 export class Physical {
@@ -39,6 +42,7 @@ export class Physical {
       this.isCollide = false;
     } else {
       this.mesh.position.add(this.vel);
+      this.accelerate(G);
     }
 
   }
@@ -49,18 +53,26 @@ export class Physical {
 
   checkWallCollision() {
     // floor (set this -height )
-    if (this.radius - this.mesh.position.z > height) {
+    if (this.radius - this.mesh.position.z > halfHeight) {
       // simple solution, no fast moving friends
       this.isCollide = true;
       this.mesh.position.x += this.vel.x;
       this.mesh.position.y += this.vel.y;
-      this.mesh.position.z += (this.vel.z - (this.mesh.position.z - this.radius + height)) * floorElasticity; // check if this is right...
+      if(this.vel.length() < stillness){
+        this.vel.z = 0;
+        this.mesh.position.z = this.radius - halfHeight;
+      } else {
+        this.vel.z = -this.vel.z * floorElasticity;
+        this.mesh.position.z += this.vel.z - (this.mesh.position.z - this.radius + halfHeight) * floorElasticity;
+      }
     }
     // side walls (set them at \pm side)
     if (this.mesh.position.x + this.radius > side || this.radius - this.mesh.position.x > side) { // apply if above works
+      this.isCollide = true;
       this.vel.x = -this.vel.x * sideWallElasticity;
     }
     if (this.mesh.position.y + this.radius > side || this.radius - this.mesh.position.y > side) { // apply if above works...
+      this.isCollide = true;
       this.vel.y = -this.vel.y * sideWallElasticity;
     }
     // above code should be revised not to tunnel thru wall.
@@ -84,13 +96,12 @@ export function physics(elements: Physical[]) {
 
     // Collision with side wall and floor might be treated as special case?? it only cost O(N).
     elements[i].checkWallCollision();
-    let someGroupThatPossiblyCollideWith: Physical[] = [elements[1]];    // This line should be elaborated later...!!! el[1] is used as dummy.
-    someGroupThatPossiblyCollideWith.forEach((x: Physical) => {
-      elements[i].checkCollisionWith(x);
-    });
+    // let someGroupThatPossiblyCollideWith: Physical[] = [elements[1]];    // This line should be elaborated later...!!! el[1] is used as dummy.
+    // someGroupThatPossiblyCollideWith.forEach((x: Physical) => {
+    //   elements[i].checkCollisionWith(x);
+    // });
 
     // After all are done move to next position.
-    elements[i].nextPosition();
-    elements[i].accelerate(G);
+    elements[i].nextPosition(); // and also accelerate.
   }
 }

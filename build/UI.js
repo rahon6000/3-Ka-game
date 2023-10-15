@@ -1,5 +1,5 @@
 import { camera, scene, renderer, createSph } from './script.js';
-import { sphs } from './physics.js';
+import { sphs, height } from './physics.js';
 let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0;
 let windowHalfX = window.innerWidth / 2;
 let windowHalfY = window.innerHeight / 2;
@@ -19,7 +19,7 @@ export function onDocumentMouseMove(event) {
 export function onDocumentClick(event) {
     clickX = (event.clientX - windowHalfX);
     clickY = -(event.clientY - windowHalfY);
-    let newMesh = createSph(Math.random() * 20 + 1, 'test', [clickX, clickY, 0], [0, 0, 0]);
+    let newMesh = createSph(Math.random() * 20 + 1, 'test', [clickX, clickY, 0.5 * height], [Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI, 0]); // This might not be random.
     scene.add(newMesh);
 }
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
