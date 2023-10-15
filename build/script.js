@@ -1,35 +1,13 @@
 import * as THREE from 'three';
+import * as PHYS from './physics.js';
+import * as UI from './UI.js';
 // import Stats from 'three/addons/libs/stats.module.js';
 let container; //, stats;
 container = document.getElementById('container');
-let camera;
-let scene;
-let renderer;
-let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0;
-let windowHalfX = window.innerWidth / 2;
-let windowHalfY = window.innerHeight / 2;
-let G = new THREE.Vector3(0, 0, -1);
-let sphs = []; // managing all fruits
-// should consider frame
-class Physical {
-    constructor(mesh, vel) {
-        this.mesh = mesh;
-        this.vel = new THREE.Vector3(vel[0], vel[1], vel[2]);
-    }
-    getPosFromMesh() {
-        return [this.mesh.position.x, this.mesh.position.y, this.mesh.position.z];
-    }
-    getVelFromMesh() {
-        return [this.vel.x, this.vel.y, this.vel.z];
-    }
-    nextPosition() {
-        this.mesh.position.add(this.vel);
-    }
-    accelerate(acc) {
-        this.vel.add(acc);
-    }
-}
-;
+export let camera;
+export let scene;
+export let renderer;
+const sphs = []; // managing all fruits
 let debTab = document.getElementsByClassName("debTab");
 init();
 animate();
@@ -54,13 +32,13 @@ function init() {
     renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
     container.appendChild(renderer.domElement);
     // 리스너는 상시대기 시키는겨...?
-    document.addEventListener('mousemove', onDocumentMouseMove);
-    document.addEventListener('click', onDocumentClick);
-    window.addEventListener('resize', onWindowResize);
+    document.addEventListener('mousemove', UI.onDocumentMouseMove);
+    document.addEventListener('click', UI.onDocumentClick);
+    window.addEventListener('resize', UI.onWindowResize);
     // Debug UI
-    (_a = document.getElementById("camPos")) === null || _a === void 0 ? void 0 : _a.addEventListener('change', onCamDebugChanged);
+    (_a = document.getElementById("camPos")) === null || _a === void 0 ? void 0 : _a.addEventListener('change', UI.onCamDebugChanged);
 }
-function createSph(radius, textureName, position, rotation) {
+export function createSph(radius, textureName, position, rotation) {
     // Create spheres
     // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
@@ -82,28 +60,10 @@ function createSph(radius, textureName, position, rotation) {
     // mesh.position.x = 0;
     mesh.position.set(position[0], position[1], position[2]); // Type of pos must be THREE.vector3
     mesh.rotation.set(rotation[0], rotation[1], rotation[2]); // Type of rotation must be THREE.euler
-    const physicalElem = new Physical(mesh, [0, 0, 0]);
+    const physicalElem = new PHYS.Physical(mesh, [0, 0, 0]);
     sphs.push(physicalElem);
     console.log('sphere created.');
     return mesh;
-}
-function onWindowResize() {
-    windowHalfX = window.innerWidth / 2;
-    windowHalfY = window.innerHeight / 2;
-    // 창 크기 변환시 camera 를 업데이트 한다.
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-}
-function onDocumentMouseMove(event) {
-    mouseX = (event.clientX - windowHalfX);
-    mouseY = -(event.clientY - windowHalfY);
-}
-function onDocumentClick(event) {
-    clickX = (event.clientX - windowHalfX);
-    clickY = -(event.clientY - windowHalfY);
-    let newMesh = createSph(Math.random() * 20 + 1, 'test', [clickX, clickY, 0], [0, 0, 0]);
-    scene.add(newMesh);
 }
 // 얘가 한번만이 아닌 계속 작동하는 원리는 뭐야?
 function animate() {
@@ -120,33 +80,7 @@ function render() {
     // camera.position.y += (- mouseY - camera.position.y) * 0.05;
     camera.lookAt(scene.position);
     renderer.render(scene, camera); // OF COURSE we use prepared renderer.
-    physics(sphs);
-    debugging(debTab);
-}
-// should separate debugging part to another .js
-function debugging(debTab) {
-    try {
-        debTab.item(0).innerHTML = "(" + mouseX + ", " + mouseY + ")";
-        debTab.item(1).innerHTML = "(" + windowHalfX + ", " + windowHalfY + ")";
-        debTab.item(2).innerHTML = "(" + Math.round(camera.position.x) + ", " + Math.round(camera.position.y) + ")";
-        debTab.item(3).innerHTML = "(" + sphs.length + ")";
-        debTab.item(4).innerHTML = "(" + sphs[0].getPosFromMesh() + ")";
-        debTab.item(5).innerHTML = "(" + sphs[0].getVelFromMesh() + ")";
-    }
-    catch (error) {
-    }
-}
-function onCamDebugChanged(event) {
-    // @ts-ignore
-    camera.position.x = event.currentTarget.camX.value;
-    // @ts-ignore
-    camera.position.y = event.currentTarget.camY.value;
-}
-function physics(elements) {
-    for (let i = 0; i < elements.length; i++) {
-        // console.log(elements.getPosFromMesh()[0]);
-        elements[i].nextPosition();
-        elements[i].accelerate(G);
-    }
+    PHYS.physics(sphs);
+    UI.debugging(debTab);
 }
 //# sourceMappingURL=script.js.map
