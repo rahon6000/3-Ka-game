@@ -8,7 +8,7 @@ container = document.getElementById('container');
 export let camera: THREE.PerspectiveCamera;
 export let scene: THREE.Scene;
 export let renderer: THREE.WebGLRenderer;
-export let side: number = 200;
+
 
 let debTab: HTMLCollectionOf<Element> = document.getElementsByClassName("debTab");
 
@@ -38,7 +38,7 @@ function init() {
 
   light.position.set(0, 0, 1);
   scene.add(light);
-  let border = createBorder(side, side, scene);
+  let border = createBorder(PHYS.side, PHYS.height, scene);
 
   let mesh = createSph(20, 'test', [0, 0, 1000], [0, 0, 0]);
   scene.add(mesh);
@@ -85,29 +85,29 @@ export function createSph(radius: number, textureName: string, position: number[
   // mesh.position.x = 0;
   mesh.position.set(position[0], position[1], position[2]); // Type of pos must be THREE.vector3
   mesh.rotation.set(rotation[0], rotation[1], rotation[2]); // Type of rotation must be THREE.euler
-  const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], false);
+  const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], false, radius);
   PHYS.sphs.push(physicalElem);
   console.log('sphere created.')
   return mesh;
 }
 
 
-function createBorder(side: number, height: number, scene: THREE.Scene) {
+function createBorder(side: number, height: number, scene: THREE.Scene) { // should be consider it to fit exact size.
   let thickness = 10;
   let opacity = 0.2;
-  let myGeo = new THREE.BoxGeometry(side,side,thickness,1,1,1);
+  let myGeo = new THREE.BoxGeometry(2 * side, 2 * side,thickness,1,1,1);
   let material = new THREE.MeshBasicMaterial({ 
     opacity: opacity,
     transparent: true,
     color: new THREE.Color("white")
   })
   let mesh = new THREE.Mesh(myGeo, material);
-  mesh.position.set(0,0,(thickness-height)*0.5);
-  const physicalElem = new PHYS.Physical(mesh, [0,0,0], true);
+  mesh.position.set(0,0,(thickness-height));
+  // const physicalElem = new PHYS.Physical(mesh, [0,0,0], true);
   scene.add(mesh);
   //
 
-  let distance = (side - thickness) * 0.5;
+  let distance = (side - thickness);
   let sideArray = [[0, distance],
                     [0, -distance],
                     [distance, 0],
@@ -124,9 +124,9 @@ function createBorder(side: number, height: number, scene: THREE.Scene) {
       color: new THREE.Color("white")
     })
     let mesh1 = new THREE.Mesh(myGeo, material);
-    mesh1.position.set(0,0,-height/2);
+    mesh1.position.set(0,0,-height);
     mesh1.rotateOnWorldAxis(rotaionArray[i], 0.5 * Math.PI);
-    const physicalElem1 = new PHYS.Physical(mesh1, [0,0,0], true);
+    // const physicalElem1 = new PHYS.Physical(mesh1, [0,0,0], true);
     mesh1.position.set(sideArray[i][0], sideArray[i][1], 0);
     scene.add(mesh1);
   }
