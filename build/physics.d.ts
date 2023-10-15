@@ -4,7 +4,8 @@ export declare let sphs: Physical[];
 export declare class Physical {
     mesh: THREE.Mesh;
     vel: THREE.Vector3;
-    constructor(mesh: THREE.Mesh, vel: number[]);
+    isFixed: boolean;
+    constructor(mesh: THREE.Mesh, vel: number[], isFixed: boolean);
     getPosFromMesh(): number[];
     getVelFromMesh(): number[];
     nextPosition(): void;

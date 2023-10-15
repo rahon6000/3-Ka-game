@@ -7,7 +7,7 @@ container = document.getElementById('container');
 export let camera;
 export let scene;
 export let renderer;
-const sphs = []; // managing all fruits
+export let side = 200;
 let debTab = document.getElementsByClassName("debTab");
 init();
 animate();
@@ -16,14 +16,20 @@ function init() {
     container = document.getElementById('container');
     // camera = new THREE.OrthographicCamera();
     camera = new THREE.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 1, 10000);
-    camera.position.z = 1800;
-    // camera.rotation.z = 1;
+    camera.position.x = -900;
+    camera.position.y = -900;
+    camera.position.z = 900;
+    // camera.rotation.setFromQuaternion(
+    //   new THREE.Quaternion()
+    //   .setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI / 2 )
+    // );
     scene = new THREE.Scene();
     scene.background = new THREE.Color("skyblue");
     const light = new THREE.AmbientLight();
     // const light = new THREE.DirectionalLight(0xffffff, 3);
     light.position.set(0, 0, 1);
     scene.add(light);
+    let border = createBorder(side, side, scene);
     let mesh = createSph(20, 'test', [0, 0, 1000], [0, 0, 0]);
     scene.add(mesh);
     // Finally, (prepare) Renderer
@@ -60,10 +66,49 @@ export function createSph(radius, textureName, position, rotation) {
     // mesh.position.x = 0;
     mesh.position.set(position[0], position[1], position[2]); // Type of pos must be THREE.vector3
     mesh.rotation.set(rotation[0], rotation[1], rotation[2]); // Type of rotation must be THREE.euler
-    const physicalElem = new PHYS.Physical(mesh, [0, 0, 0]);
-    sphs.push(physicalElem);
+    const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], false);
+    PHYS.sphs.push(physicalElem);
     console.log('sphere created.');
     return mesh;
+}
+function createBorder(side, height, scene) {
+    let thickness = 10;
+    let opacity = 0.2;
+    let myGeo = new THREE.BoxGeometry(side, side, thickness, 1, 1, 1);
+    let material = new THREE.MeshBasicMaterial({
+        opacity: opacity,
+        transparent: true,
+        color: new THREE.Color("white")
+    });
+    let mesh = new THREE.Mesh(myGeo, material);
+    mesh.position.set(0, 0, (thickness - height) * 0.5);
+    const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], true);
+    scene.add(mesh);
+    //
+    let distance = (side - thickness) * 0.5;
+    let sideArray = [[0, distance],
+        [0, -distance],
+        [distance, 0],
+        [-distance, 0]];
+    let rotaionArray = [new THREE.Vector3(1, 0, 0),
+        new THREE.Vector3(1, 0, 0),
+        new THREE.Vector3(0, 1, 0),
+        new THREE.Vector3(0, 1, 0)];
+    for (let i = 0; i < 4; i++) {
+        let myGeo1 = new THREE.BoxGeometry(side, side, thickness, 1, 1, 1);
+        let material1 = new THREE.MeshBasicMaterial({
+            opacity: opacity,
+            transparent: true,
+            color: new THREE.Color("white")
+        });
+        let mesh1 = new THREE.Mesh(myGeo, material);
+        mesh1.position.set(0, 0, -height / 2);
+        mesh1.rotateOnWorldAxis(rotaionArray[i], 0.5 * Math.PI);
+        const physicalElem1 = new PHYS.Physical(mesh1, [0, 0, 0], true);
+        mesh1.position.set(sideArray[i][0], sideArray[i][1], 0);
+        scene.add(mesh1);
+    }
+    console.log('plate created.');
 }
 // 얘가 한번만이 아닌 계속 작동하는 원리는 뭐야?
 function animate() {
@@ -78,9 +123,11 @@ function render() {
     // UI (회전) 같은 데엔 쓸 수 있겠다 싶음.
     // camera.position.x += (mouseX - camera.position.x) * 0.05;
     // camera.position.y += (- mouseY - camera.position.y) * 0.05;
-    camera.lookAt(scene.position);
-    renderer.render(scene, camera); // OF COURSE we use prepared renderer.
-    PHYS.physics(sphs);
+    // 여기에 리소스 낭비하게 만들고 싶진 않음...
+    PHYS.physics(PHYS.sphs);
     UI.debugging(debTab);
+    camera.lookAt(scene.position);
+    camera.rotateOnWorldAxis(new THREE.Vector3().subVectors(camera.position, scene.position).normalize(), ((UI.getAngle - 0.32) * Math.PI));
+    renderer.render(scene, camera); // OF COURSE we use prepared renderer.
 }
 //# sourceMappingURL=script.js.map

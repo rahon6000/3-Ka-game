@@ -1,11 +1,12 @@
 import * as THREE from "three";
-export let G = new THREE.Vector3(0, 0, -9.8);
+export let G = new THREE.Vector3(0, 0, -0.98);
 export let sphs = []; // managing all fruits
 // should consider frame
 export class Physical {
-    constructor(mesh, vel) {
+    constructor(mesh, vel, isFixed) {
         this.mesh = mesh;
         this.vel = new THREE.Vector3(vel[0], vel[1], vel[2]);
+        this.isFixed = isFixed;
     }
     getPosFromMesh() {
         return [this.mesh.position.x, this.mesh.position.y, this.mesh.position.z];

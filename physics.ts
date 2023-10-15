@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-export let G = new THREE.Vector3(0,0,-9.8);
+export let G = new THREE.Vector3(0,0,-0.98);
 
 export let sphs: Physical[] = []; // managing all fruits
 
@@ -8,10 +8,11 @@ export let sphs: Physical[] = []; // managing all fruits
 export class Physical {
   mesh: THREE.Mesh;
   vel: THREE.Vector3;
-  constructor(mesh: THREE.Mesh, vel: number[]){
+  isFixed: boolean;
+  constructor(mesh: THREE.Mesh, vel: number[], isFixed: boolean){
     this.mesh = mesh;
     this.vel = new THREE.Vector3(vel[0], vel[1], vel[2]);
-    
+    this.isFixed = isFixed;
   }
 
   getPosFromMesh(){
