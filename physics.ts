@@ -13,8 +13,10 @@ let sideWallElasticity = 0.9;
 
 let stillness = 4 * gravity;
 
+let tmp = new THREE.Vector3();
 // should consider frame
 export class Physical {
+  mass: number;
   mesh: THREE.Mesh;
   vel: THREE.Vector3;
   isFixed: boolean;
@@ -26,6 +28,7 @@ export class Physical {
     this.isFixed = isFixed;
     this.radius = radius;
     this.isCollide = false;
+    this.mass = 1;
   }
 
   getPosFromMesh() {
@@ -53,7 +56,7 @@ export class Physical {
 
   checkWallCollision() {
     // floor (set this -height )
-    if (this.radius - this.mesh.position.z > halfHeight) {
+    if (this.radius - (this.mesh.position.z + this.vel.z) > halfHeight) {
       // simple solution, no fast moving friends
       this.isCollide = true;
       this.mesh.position.x += this.vel.x;
@@ -67,11 +70,13 @@ export class Physical {
       }
     }
     // side walls (set them at \pm side)
-    if (this.mesh.position.x + this.radius > side || this.radius - this.mesh.position.x > side) { // apply if above works
+    let nextXpos = this.mesh.position.x + this.vel.x;
+    if ( nextXpos + this.radius > side || this.radius - nextXpos > side) { // apply if above works
       this.isCollide = true;
       this.vel.x = -this.vel.x * sideWallElasticity;
     }
-    if (this.mesh.position.y + this.radius > side || this.radius - this.mesh.position.y > side) { // apply if above works...
+    let nextYpos = this.mesh.position.y + this.vel.y;
+    if (nextYpos + this.radius > side || this.radius - nextYpos > side) { // apply if above works...
       this.isCollide = true;
       this.vel.y = -this.vel.y * sideWallElasticity;
     }
@@ -80,14 +85,34 @@ export class Physical {
   }
 
   checkCollisionWith(x: Physical) {
-    if ( this.radius + x.radius > this.mesh.position.distanceTo(x.mesh.position)){
+    let objA = this.mesh.position.clone();
+    let objB = x.mesh.position.clone();
+    if ( this.radius + x.radius > (objA.add(this.vel)).distanceTo(objB.add(x.vel))){
+      if( this.radius === x.radius) {
+        // this.sphereFusion(x);
+        // return;
+      }
       // MATH...!!! 😢
       // Use below variables... It seems complicated. 
       this.vel;
       x.vel;
       this.mesh.position;
       x.mesh.position;
+      let lineV = objA.sub(objB).normalize();
+      let normalVelA = this.vel.clone().projectOnVector(lineV.negate());
+      let normalVelB = x.vel.clone().projectOnVector(lineV);
+      let amplA = normalVelA.dot(lineV);
+      let amplB = normalVelB.dot(lineV);
+      let massSum = this.mass + x.mass;
+      this.vel = lineV.clone().multiplyScalar( (amplA * (this.mass - x.mass) + amplB * ( 2 * x.mass)) / massSum );
+      x.vel = lineV.clone().multiplyScalar( (amplA * ( 2 * this.mass) + amplB * ( x.mass - this.mass )) / massSum );
+      this.mesh.position.add(this.vel);
+      x.mesh.position.add(x.vel);
     }
+  }
+
+  sphereFusion(sph: Physical) {
+    console.log("same sphs touched!");
   }
 };
 
@@ -96,6 +121,13 @@ export function physics(elements: Physical[]) {
 
     // Collision with side wall and floor might be treated as special case?? it only cost O(N).
     elements[i].checkWallCollision();
+    
+    // spheres 사라지는 경우 주의...
+    for (let j = 0; j < elements.length; j++){
+      if(i === j) continue;
+      elements[i].checkCollisionWith(elements[j]);
+    }
+
     // let someGroupThatPossiblyCollideWith: Physical[] = [elements[1]];    // This line should be elaborated later...!!! el[1] is used as dummy.
     // someGroupThatPossiblyCollideWith.forEach((x: Physical) => {
     //   elements[i].checkCollisionWith(x);
