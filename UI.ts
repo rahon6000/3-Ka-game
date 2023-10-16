@@ -2,25 +2,37 @@ import {
   camera,
   scene,
   renderer,
-  createSph
+  createSph,
+  fps
 } from './script.js';
 import {sphs, height} from './physics.js';
+import { MathUtils, Vector3 } from 'three';
 
 let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0;
+let cameraX = 0, cameraY = 0;
 
 let windowHalfX = window.innerWidth / 2;
 let windowHalfY = window.innerHeight / 2;
+let currentPhi = 0, targetPhi = 0;
+let currentTheta = 0.25* Math.PI, targetTheta = 0.25* Math.PI;
+let currentRadi = 900, targetRadi = 900;
+let transitionTime = 500;
+let noKeyInput = false;
+
+// export let cameraPhi:number = 0;
+// export let cameraTheta:number = Math.PI * 0.25;
+// export let cameraR:number = 900 * 1.4;
 
 export function onWindowResize() {
 
-  windowHalfX = window.innerWidth / 2;
-  windowHalfY = window.innerHeight / 2;
+  // windowHalfX = window.innerWidth / 2;
+  // windowHalfY = window.innerHeight / 2;
 
-  // 창 크기 변환시 camera 를 업데이트 한다.
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+  // // 창 크기 변환시 camera 를 업데이트 한다.
+  // camera.aspect = window.innerWidth / window.innerHeight;
+  // camera.updateProjectionMatrix();
 
-  renderer.setSize(500, 500);
+  // renderer.setSize(500, 500);
 
   // renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -41,6 +53,55 @@ export function onDocumentClick(event: MouseEvent) {
   scene.add(newMesh);
 }
 
+export function onKeydown(event: KeyboardEvent) {
+  let inputKey:string = event.key;
+  if(currentPhi >= 7) currentPhi = 0;
+  if(noKeyInput) return;
+  switch (inputKey.toUpperCase()) {
+    case 'Q':
+      targetPhi = currentPhi - 0.5 * Math.PI;
+      break;
+    case 'E':
+      targetPhi = currentPhi + 0.5 * Math.PI;
+      break;
+    case 'Z':
+      targetRadi = currentRadi - 10;
+      break;
+    default:
+      break;
+  }
+  noKeyInput = true;
+  setTimeout( ()=> {noKeyInput = false;}, transitionTime);
+  smoothCameraSet(targetPhi, targetTheta, targetRadi);
+}
+
+function setCameraStatus(Phi:number, Theta:number, Radi:number) { // 더 간단하게 짤 수 있을텐데
+  let xyProjection = Radi * Math.sin(Theta);
+  let zAxis = new Vector3(0,0,1);
+  let yAxis = new Vector3(0,1,0);
+  camera.rotation.set(0, 0.5 * Math.PI - Theta ,0.5 * Math.PI);
+  camera.rotateOnWorldAxis(zAxis, Phi);
+  camera.position.set(xyProjection * Math.cos(Phi),
+                      xyProjection * Math.sin(Phi),
+                      Radi * Math.cos(Theta));
+}
+
+export async function smoothCameraSet(Phi:number, Theta:number, Radi:number) {
+  let initTime = Date.now();
+  let progressing = 0;
+  let transit = setInterval(()=>{
+    progressing = (Date.now() - initTime) / transitionTime;
+    if(progressing >= 1) {
+      setCameraStatus(Phi, Theta, Radi);
+      clearInterval(transit);
+      currentPhi = targetPhi; currentRadi = targetRadi; currentTheta = targetTheta;
+    }
+    setCameraStatus(MathUtils.lerp(currentPhi, Phi, progressing),
+                    MathUtils.lerp(currentTheta, Theta, progressing),
+                    MathUtils.lerp(currentRadi, Radi, progressing));
+  },20);
+}
+
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
@@ -52,7 +113,7 @@ export function debugging(debTab: HTMLCollectionOf<Element>) {
   try {
     debTab.item(0)!.innerHTML = "(" + mouseX + ", " + mouseY + ")";
     debTab.item(1)!.innerHTML = "(" + windowHalfX + ", " + windowHalfY + ")";
-    debTab.item(2)!.innerHTML = "(" + Math.round(camera.position.x) + ", " + Math.round(camera.position.y) + ")";
+    debTab.item(2)!.innerHTML = "(" + cameraX.toFixed() + ", " + cameraY.toFixed() + ")";
     // @ts-ignore
     debTab.item(3)!.innerHTML = "(" + sphs.length + ")";
     let pos = sphs[0].getPosFromMesh();
@@ -65,6 +126,7 @@ export function debugging(debTab: HTMLCollectionOf<Element>) {
     debTab.item(5)!.innerHTML = "(" + Math.round(vel[0]) + "," +
     Math.round(vel[1]) + ","+
     Math.round(vel[2]) + ")";
+    debTab.item(6)!.innerHTML = "(" + fps.toPrecision(3) + ")";
   } catch (error) {
     
   }
@@ -72,11 +134,13 @@ export function debugging(debTab: HTMLCollectionOf<Element>) {
 export let getAngle: number = 0;
 export function onCamDebugChanged(event: Event){
   // @ts-ignore
-  camera.position.x = event.currentTarget!.camX.value; 
+  // camera.position.x = event.currentTarget!.camX.value; 
   // @ts-ignore
-  camera.position.y = event.currentTarget!.camY.value;
+  // camera.position.y = event.currentTarget!.camY.value;
   // @ts-ignore
-  getAngle = event.currentTarget!.camTh.value;
-  
+  let camDistance = event.currentTarget!.camR.value;
+  // @ts-ignore
+  getAngle =  Number(event.currentTarget!.camTh.value);
+  // setCameraStatus((getAngle) * Math.PI, 0.25* Math.PI, 900 * 1.4);
+  setCameraStatus((getAngle) * Math.PI, 0.25 * Math.PI, camDistance );
 }
-

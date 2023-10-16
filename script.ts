@@ -8,6 +8,10 @@ container = document.getElementById('container');
 export let camera: THREE.PerspectiveCamera;
 export let scene: THREE.Scene;
 export let renderer: THREE.WebGLRenderer;
+export let fps:number = 0;
+let then:number;
+let now:number;
+
 
 const zAxis = new THREE.Vector3(0,0,1); 
 
@@ -20,12 +24,16 @@ function init() {
 
   container = document.getElementById('container') as HTMLElement;
 
+  console.log("cl-h : " + container.clientHeight);
+  console.log("cl-w : " + container.clientWidth);
+  console.log("cl-l : " + container.clientLeft);
+  console.log("cl-t : " + container.clientTop);
+  console.log("of-l : " + container.offsetLeft);
+  console.log("of-t : " + container.offsetTop);
 
   // camera = new THREE.OrthographicCamera();
   camera = new THREE.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 1, 10000);
-  camera.position.x = 0;
-  camera.position.y = -900;
-  camera.position.z = 900;
+  UI.smoothCameraSet(0, 0.25*Math.PI, 900);
   // camera.rotation.setFromQuaternion(
   //   new THREE.Quaternion()
   //   .setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI / 2 )
@@ -55,10 +63,10 @@ function init() {
   document.addEventListener('click', UI.onDocumentClick);
 
   window.addEventListener('resize', UI.onWindowResize);
+  window.addEventListener('keydown', UI.onKeydown);
 
   // Debug UI
-  document.getElementById("camPos")?.addEventListener('change', UI.onCamDebugChanged);
-
+  document.getElementById("camPos")?.addEventListener('input', UI.onCamDebugChanged);
 }
 
 export function createSph(radius: number, textureName: string, position: number[], rotation: number[]) {
@@ -146,6 +154,9 @@ function animate() {
   requestAnimationFrame(animate);
   render();
   // stats.update();
+  now = Date.now();
+  fps = 1000/(now - then);
+  then = now;
 }
 
 // scene is referred at ACTUAL render function.
@@ -160,12 +171,11 @@ function render() {
   // 여기에 리소스 낭비하게 만들고 싶진 않음...
   PHYS.physics(PHYS.sphs);
   UI.debugging(debTab);
-  camera.lookAt(scene.position);
-  camera.rotateOnWorldAxis(
-    new THREE.Vector3(0,0,1),
-    ((UI.getAngle ) * Math.PI));
-
+  // UI.setCameraStatus((UI.getAngle ) * Math.PI, 0.25* Math.PI, 900 * 1.4);
+  // camera.rotateOnWorldAxis(
+  //   new THREE.Vector3(0,0,1),
+  //   ((UI.getAngle ) * Math.PI));
+  // camera.lookAt(scene.position);
   renderer.render(scene, camera); // OF COURSE we use prepared renderer.
   
 }
-
