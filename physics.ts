@@ -9,9 +9,11 @@ export let height: number = 300;
 export let dropMargin: number = 30;
 let halfHeight = height * 0.5;
 
-let floorElasticity = 0.48;
-let sideWallElasticity = 0.48;
-
+// Physical properties...
+let floorElasticity = 0.5;
+let sideWallElasticity = 0;
+let interSphereElasticity = 0.5;
+let sphereFriction = 0.7;
 let stillness = 4 * gravity;
 let wallOverwrapCoeff = 0.1;
 
@@ -58,24 +60,26 @@ export class Physical {
 
   checkWallCollision() {
     // floor (set this -height )
-    if (this.radius - (this.mesh.position.z + this.vel.z) > halfHeight) {
+    let overwrap = this.radius - (this.mesh.position.z + this.vel.z) - halfHeight;
+    if (overwrap > 0) {
       // simple solution, no fast moving friends
       this.isCollide = true;
       this.mesh.position.x += this.vel.x;
       this.mesh.position.y += this.vel.y;
+      this.vel.x *= 0.99; this.vel.y *= 0.99; //friction
       if (this.vel.length() < stillness) {
         this.vel.z = 0;
         this.mesh.position.z = this.radius - halfHeight;
       } else {
-        this.vel.z = -this.vel.z * floorElasticity;
-        this.mesh.position.z += this.vel.z - (this.mesh.position.z - this.radius + halfHeight) * floorElasticity;
+        this.mesh.position.z =  this.radius - halfHeight;
+        this.vel.z = Math.floor(Math.abs(this.vel.z)*2) * 0.5 * floorElasticity
+        this.mesh.position.z += this.vel.z;
       }
     }
 
     // side wall edge
     let edgeDist = new THREE.Vector3();
     let edgeCollisionVector = new THREE.Vector3();
-    let overwrap = 0;
     if (this.mesh.position.z > halfHeight) {
       edgeDist.set(this.mesh.position.x + this.vel.x - side, 0, this.mesh.position.z + this.vel.z - halfHeight);
       if (edgeDist.length() < this.radius) {
@@ -174,21 +178,31 @@ export class Physical {
       // MATH...!!! 😢
       // Use below variables... It seems complicated.
       let lineV = objA.sub(objB).normalize();
-      let normalVelA = this.vel.clone().projectOnVector(lineV.negate());
+      let normalVelA = this.vel.clone().projectOnVector(lineV);
       let normalVelB = x.vel.clone().projectOnVector(lineV);
-      let amplA = normalVelA.dot(lineV);
+      this.vel.sub(normalVelA).multiplyScalar(sphereFriction);
+      x.vel.sub(normalVelB).multiplyScalar(sphereFriction);
+      let amplA = normalVelA.dot(lineV); // this don't use sqrt!
       let amplB = normalVelB.dot(lineV);
       let massSum = this.mass + x.mass;
-      this.vel = lineV.clone().multiplyScalar((amplA * (this.mass - x.mass) + amplB * (2 * x.mass)) / massSum);
-      x.vel = lineV.clone().multiplyScalar((amplA * (2 * this.mass) + amplB * (x.mass - this.mass)) / massSum);
+      normalVelA = lineV.clone().multiplyScalar(
+        (amplA * (this.mass - x.mass) + amplB * (2 * x.mass)) / massSum);
+      normalVelB = lineV.clone().multiplyScalar(
+        (amplA * (2 * this.mass) + amplB * (x.mass - this.mass)) / massSum);
+      this.vel.add(normalVelA.multiplyScalar(interSphereElasticity));
+      this.vel.add(normalVelB.multiplyScalar(interSphereElasticity));
+      // this.vel.sub(normalVelA);
+      // x.vel.sub(normalVelB);
       this.mesh.position.add(this.vel);
       x.mesh.position.add(x.vel);
       let overwrap = (this.radius + x.radius) - tmp.subVectors(this.mesh.position, x.mesh.position).length();
       if( overwrap > 0){
-        lineV.multiplyScalar(overwrap)
+        lineV.multiplyScalar(overwrap * 0.5);
+        this.mesh.position.add(lineV);
+        x.mesh.position.sub(lineV);
+        lineV.multiplyScalar(0.1);
         x.vel.add(lineV);
-        lineV.negate();
-        this.vel.add(lineV);        
+        this.vel.add(lineV);
       }
     }
   }

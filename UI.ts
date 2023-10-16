@@ -3,13 +3,13 @@ import {
   scene,
   renderer,
   createSph,
+  createColorSph,
   fps
 } from './script.js';
 import {sphs, side, height, dropMargin} from './physics.js';
 import { MathUtils, Vector3 } from 'three';
 
 let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0;
-let cameraX = 0, cameraY = 0;
 export let container = document.getElementById('container') as HTMLElement;
 export let w_width = container.clientWidth;
 export let w_height = container.clientHeight;
@@ -19,7 +19,7 @@ let windowHalfX = container.clientWidth / 2 + container.offsetLeft;
 let containerWidth = container.clientWidth / 2;
 let containerHeight = container.clientHeight / 2;
 let windowHalfY = container.clientHeight / 2 + container.offsetTop;
-export let currentPhi = 0.25* Math.PI, targetPhi = 0.25* Math.PI;
+export let currentPhi = 0.25* Math.PI + 0.001, targetPhi = 0.25* Math.PI + 0.001;
 export let currentTheta = 0.25* Math.PI, targetTheta = 0.25* Math.PI;
 export let currentRadi = 900*1.5, targetRadi = 900*1.5;
 let transitionTime = 500;
@@ -61,7 +61,10 @@ export function onDocumentClick(event: MouseEvent) {
   else if(clickX >= side) clickX = side - margin;
   if(clickY <= -side) clickY = -side + margin;
   else if(clickY >= side) clickY = side - margin;
-  let newMesh = createSph(randomRadius(), 'test', 
+  // let newMesh = createSph(randomRadius(), 'test', 
+  //   [clickX, clickY, 0.5 * height + dropMargin], 
+  //   [Math.random()*2*Math.PI, Math.random()*2*Math.PI, 0]); // This might not be random.
+  let newMesh = createColorSph( MathUtils.randInt(0,5),
     [clickX, clickY, 0.5 * height + dropMargin], 
     [Math.random()*2*Math.PI, Math.random()*2*Math.PI, 0]); // This might not be random.
   scene.add(newMesh);
@@ -73,16 +76,22 @@ export function onKeydown(event: KeyboardEvent) {
   if(noKeyInput) return;
   switch (inputKey.toUpperCase()) {
     case 'Q':
-      targetPhi = currentPhi - 0.5 * Math.PI;
+      targetPhi = currentPhi - 0.25 * Math.PI;
       break;
     case 'E':
-      targetPhi = currentPhi + 0.5 * Math.PI;
+      targetPhi = currentPhi + 0.25 * Math.PI;
       break;
     case 'Z':
-      targetRadi = currentRadi - 50;
+      targetRadi = currentRadi - 70;
       break;
     case 'C':
-      targetRadi = currentRadi + 50;
+      targetRadi = currentRadi + 70;
+      break;
+    case 'W':
+      targetTheta = currentTheta - 0.1 * Math.PI;
+      break;
+    case 'X':
+      targetTheta = currentTheta + 0.1 * Math.PI;
       break;
     default:
       break;
@@ -96,7 +105,7 @@ function setCameraStatus(Phi:number, Theta:number, Radi:number) { // 더 간단�
   let xyProjection = Radi * Math.sin(Theta);
   let zAxis = new Vector3(0,0,1);
   let yAxis = new Vector3(0,1,0);
-  camera.rotation.set(0, 0.5 * Math.PI - Theta ,0.5 * Math.PI);
+  camera.rotation.set(0, Theta ,0.5 * Math.PI); // 😢
   camera.rotateOnWorldAxis(zAxis, Phi);
   camera.position.set(xyProjection * Math.cos(Phi),
                       xyProjection * Math.sin(Phi),
@@ -130,7 +139,7 @@ export function debugging(debTab: HTMLCollectionOf<Element>) {
   try {
     debTab.item(0)!.innerHTML = "(" + pos.x.toFixed(2) + ", " + pos.y.toFixed(2) + ")";
     debTab.item(1)!.innerHTML = "(" + windowHalfX + ", " + windowHalfY + ")";
-    debTab.item(2)!.innerHTML = "(" + cameraX.toFixed() + ", " + cameraY.toFixed() + ")";
+    debTab.item(2)!.innerHTML = "(" + camera.position.x.toFixed() + ", " + camera.position.y.toFixed() + ")";
     // @ts-ignore
     debTab.item(3)!.innerHTML = "(" + sphs.length + ")";
     let position = sphs[0].getPosFromMesh();

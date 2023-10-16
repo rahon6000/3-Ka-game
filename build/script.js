@@ -75,6 +75,33 @@ export function createSph(radius, textureName, position, rotation) {
     console.log('sphere created.');
     return mesh;
 }
+export function createColorSph(Rank, position, rotation) {
+    // Create spheres
+    // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
+    let radius = config[Rank].radius;
+    let myGeo = new THREE.SphereGeometry(radius, 32, 16);
+    // let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
+    let material = new THREE.MeshBasicMaterial({ color: config[Rank].color });
+    // Create mesh from Geometry & Material. ADD TO THE SCENE!
+    let mesh = new THREE.Mesh(myGeo, material);
+    let textured = new THREE.Mesh(myGeo, material);
+    mesh.add(textured);
+    let acceptRange = PHYS.side - radius * 0.5;
+    if (position[0] < -acceptRange)
+        position[0] = -acceptRange;
+    else if (position[0] > acceptRange)
+        position[0] = acceptRange;
+    if (position[1] < -acceptRange)
+        position[1] = -acceptRange;
+    else if (position[1] > acceptRange)
+        position[1] = acceptRange;
+    mesh.position.set(position[0], position[1], position[2]); // Type of pos must be THREE.vector3
+    mesh.rotation.set(rotation[0], rotation[1], rotation[2]); // Type of rotation must be THREE.euler
+    const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], false, radius);
+    PHYS.sphs.push(physicalElem);
+    console.log('sphere created.');
+    return mesh;
+}
 function createBorder(side, height, scene) {
     let thickness = 10;
     let opacity = 0.2;
@@ -82,10 +109,10 @@ function createBorder(side, height, scene) {
     let material = new THREE.MeshBasicMaterial({
         opacity: opacity,
         transparent: true,
-        color: new THREE.Color("white")
+        color: new THREE.Color("teal")
     });
     let mesh = new THREE.Mesh(myGeo, material);
-    mesh.position.set(0, 0, (thickness - 0.5 * height + PHYS.dropMargin));
+    mesh.position.set(0, 0, (-0.5 * (thickness + height)));
     // 충돌 따로 하드코딩 해서 구현
     scene.add(mesh);
     let distance = (side - thickness * 0.5);
@@ -132,4 +159,84 @@ function render() {
     UI.debugging(debTab);
     renderer.render(scene, camera); // OF COURSE we use prepared renderer.
 }
+// 🍉 Sphere configuration 🍉
+export let config = [
+    {
+        radius: 10,
+        mass: 1,
+        texture: "test",
+        color: new THREE.Color("crimson"),
+        name: "cherry"
+    },
+    {
+        radius: 15,
+        mass: 1,
+        texture: "test",
+        color: new THREE.Color("salmon"),
+        name: "strawberry"
+    },
+    {
+        radius: 20,
+        mass: 1,
+        texture: "test",
+        color: new THREE.Color("slateblue"),
+        name: "grape"
+    },
+    {
+        radius: 25,
+        mass: 1,
+        texture: "test",
+        color: new THREE.Color("orange"),
+        name: "mandarin"
+    },
+    {
+        radius: 30,
+        mass: 1,
+        texture: "test",
+        color: new THREE.Color("orangered"),
+        name: "persimmon"
+    },
+    {
+        radius: 35,
+        mass: 1,
+        texture: "test",
+        color: new THREE.Color("red"),
+        name: "apple"
+    },
+    {
+        radius: 40,
+        mass: 1,
+        texture: "test",
+        color: new THREE.Color("palegoldenrod"),
+        name: "pear"
+    },
+    {
+        radius: 45,
+        mass: 1,
+        texture: "test",
+        color: new THREE.Color("pink"),
+        name: "peach"
+    },
+    {
+        radius: 50,
+        mass: 1,
+        texture: "test",
+        color: new THREE.Color("yellow"),
+        name: "ananas or pineapple"
+    },
+    {
+        radius: 55,
+        mass: 1,
+        texture: "test",
+        color: new THREE.Color("chartreuse"),
+        name: "melon"
+    },
+    {
+        radius: 60,
+        mass: 1,
+        texture: "test",
+        color: new THREE.Color("darkgreen"),
+        name: "suika"
+    }
+];
 //# sourceMappingURL=script.js.map
