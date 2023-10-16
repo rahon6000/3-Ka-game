@@ -5,17 +5,28 @@ import {
   createSph,
   fps
 } from './script.js';
-import {sphs, height} from './physics.js';
+import {sphs, side, height} from './physics.js';
 import { MathUtils, Vector3 } from 'three';
+
 
 let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0;
 let cameraX = 0, cameraY = 0;
+export let container = document.getElementById('container') as HTMLElement;
+export let w_width = container.clientWidth;
+export let w_height = container.clientHeight;
+export let w_ratio = w_height / w_width;  // Not sure this is right......
 
-let windowHalfX = window.innerWidth / 2;
-let windowHalfY = window.innerHeight / 2;
-let currentPhi = 0, targetPhi = 0;
-let currentTheta = 0.25* Math.PI, targetTheta = 0.25* Math.PI;
-let currentRadi = 900, targetRadi = 900;
+
+// let windowHalfX = window.innerWidth / 2;
+// let windowHalfY = window.innerHeight / 2;
+
+let windowHalfX = container.clientWidth / 2 + container.offsetLeft;
+let containerWidth = container.clientWidth / 2;
+let containerHeight = container.clientHeight / 2;
+let windowHalfY = container.clientHeight / 2 + container.offsetTop;
+export let currentPhi = 0.25* Math.PI, targetPhi = 0.25* Math.PI;
+export let currentTheta = 0.25* Math.PI, targetTheta = 0.25* Math.PI;
+export let currentRadi = 900*1.5, targetRadi = 900*1.5;
 let transitionTime = 500;
 let noKeyInput = false;
 
@@ -38,15 +49,26 @@ export function onWindowResize() {
 
 }
 
+let vec = new Vector3(); // recycle
+let pos = new Vector3(); // recycle
 export function onDocumentMouseMove(event: MouseEvent) {
 
   mouseX = (event.clientX - windowHalfX);
   mouseY = -(event.clientY - windowHalfY);
+  vec.set( mouseX / containerWidth, mouseY / containerHeight , 1);
+  vec.unproject( camera );
+  vec.sub( camera.position ).normalize();
+  pos.copy( camera.position ).add( vec.multiplyScalar( (0.5 * height - camera.position.z) / vec.z ));
 }
 
 export function onDocumentClick(event: MouseEvent) {
-  clickX = (event.clientX - windowHalfX);
-  clickY = -(event.clientY - windowHalfY);
+  clickX = pos.x;
+  clickY = pos.y;
+  let margin = 10;
+  if(clickX <= -side) clickX = -side + margin;
+  else if(clickX >= side) clickX = side - margin;
+  if(clickY <= -side) clickY = -side + margin;
+  else if(clickY >= side) clickY = side - margin;
   let newMesh = createSph(Math.random() * 20 + 1, 'test', 
     [clickX, clickY, 0.5 * height], 
     [Math.random()*2*Math.PI, Math.random()*2*Math.PI, 0]); // This might not be random.
@@ -65,7 +87,10 @@ export function onKeydown(event: KeyboardEvent) {
       targetPhi = currentPhi + 0.5 * Math.PI;
       break;
     case 'Z':
-      targetRadi = currentRadi - 10;
+      targetRadi = currentRadi - 50;
+      break;
+    case 'C':
+      targetRadi = currentRadi + 50;
       break;
     default:
       break;
@@ -111,16 +136,16 @@ export async function smoothCameraSet(Phi:number, Theta:number, Radi:number) {
 
 export function debugging(debTab: HTMLCollectionOf<Element>) {
   try {
-    debTab.item(0)!.innerHTML = "(" + mouseX + ", " + mouseY + ")";
+    debTab.item(0)!.innerHTML = "(" + pos.x.toFixed(2) + ", " + pos.y.toFixed(2) + ")";
     debTab.item(1)!.innerHTML = "(" + windowHalfX + ", " + windowHalfY + ")";
     debTab.item(2)!.innerHTML = "(" + cameraX.toFixed() + ", " + cameraY.toFixed() + ")";
     // @ts-ignore
     debTab.item(3)!.innerHTML = "(" + sphs.length + ")";
-    let pos = sphs[0].getPosFromMesh();
+    let position = sphs[0].getPosFromMesh();
     // @ts-ignore
-    debTab.item(4)!.innerHTML = "(" + Math.round(pos[0]) + "," +
-      Math.round(pos[1]) + ","+
-      Math.round(pos[2]) + ")";
+    debTab.item(4)!.innerHTML = "(" + Math.round(position[0]) + "," +
+      Math.round(position[1]) + ","+
+      Math.round(position[2]) + ")";
     let vel = sphs[0].getVelFromMesh();
     // @ts-ignore
     debTab.item(5)!.innerHTML = "(" + Math.round(vel[0]) + "," +

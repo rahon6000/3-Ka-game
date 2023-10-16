@@ -9,7 +9,7 @@
       border: 1px solid gray;
     }
     #container {
-      width: 500px;
+      width: 300px;
       height: 500px;
     }
     * {
@@ -18,12 +18,23 @@
   </style>
 </head>
 <body oncontextmenu="return false;">
+  <div id="container"></div>
+  <div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - vertex colors</div>
 
+  <!-- Using CDN -->
+  <!-- <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.138.3/build/three.module.js"
+      }
+    }
+  </script> -->
+  <!-- Using node.js -->
   <div id="debugContainer">
     <h1>Debugger</h1>
     <table>
       <tr>
-        <th>mousePos</th><th>windowSize</th><th>cameraXY-</th><th>sph no.</th>
+        <th>mousePos</th><th>containerSize</th><th>cameraXY-</th><th>sph no.</th>
         <th>no.1 Pos</th><th>no.1 Vel</th><th>FPS</th>
       </tr>
       <tr>
@@ -38,19 +49,7 @@
       <input type="range" step="0.01" min="-2" max="2" name="camTh">th<br> -->
     </form>
   </div>
-  
-  <div id="container"></div>
-  <div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - vertex colors</div>
 
-  <!-- Using CDN -->
-  <!-- <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.138.3/build/three.module.js"
-      }
-    }
-  </script> -->
-  <!-- Using node.js -->
   <script type="importmap">
     {
       "imports": {

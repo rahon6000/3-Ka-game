@@ -22,7 +22,7 @@ animate();
 
 function init() {
 
-  container = document.getElementById('container') as HTMLElement;
+  container = UI.container;
 
   console.log("cl-h : " + container.clientHeight);
   console.log("cl-w : " + container.clientWidth);
@@ -32,8 +32,8 @@ function init() {
   console.log("of-t : " + container.offsetTop);
 
   // camera = new THREE.OrthographicCamera();
-  camera = new THREE.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 1, 10000);
-  UI.smoothCameraSet(0, 0.25*Math.PI, 900);
+  camera = new THREE.PerspectiveCamera(20, UI.w_width / UI.w_height, 1, 10000);
+  UI.smoothCameraSet(UI.currentPhi, UI.currentTheta, UI.currentRadi);
   // camera.rotation.setFromQuaternion(
   //   new THREE.Quaternion()
   //   .setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI / 2 )
@@ -54,8 +54,10 @@ function init() {
 
   // Finally, (prepare) Renderer
   renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
+  // renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setPixelRatio(UI.w_ratio);
+  // renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
+  renderer.setSize(UI.w_width,UI.w_height);
   container.appendChild(renderer.domElement);
 
   // 리스너는 상시대기 시키는겨...?

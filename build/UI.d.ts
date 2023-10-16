@@ -1,3 +1,10 @@
+export declare let container: HTMLElement;
+export declare let w_width: number;
+export declare let w_height: number;
+export declare let w_ratio: number;
+export declare let currentPhi: number, targetPhi: number;
+export declare let currentTheta: number, targetTheta: number;
+export declare let currentRadi: number, targetRadi: number;
 export declare function onWindowResize(): void;
 export declare function onDocumentMouseMove(event: MouseEvent): void;
 export declare function onDocumentClick(event: MouseEvent): void;
