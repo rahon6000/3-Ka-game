@@ -26,10 +26,6 @@ function init() {
     // camera = new THREE.OrthographicCamera();
     camera = new THREE.PerspectiveCamera(20, UI.w_width / UI.w_height, 1, 10000);
     UI.smoothCameraSet(UI.currentPhi, UI.currentTheta, UI.currentRadi);
-    // camera.rotation.setFromQuaternion(
-    //   new THREE.Quaternion()
-    //   .setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI / 2 )
-    // );
     scene = new THREE.Scene();
     scene.background = new THREE.Color("skyblue");
     const light = new THREE.AmbientLight();
@@ -46,7 +42,6 @@ function init() {
     // renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
     renderer.setSize(UI.w_width, UI.w_height);
     container.appendChild(renderer.domElement);
-    // 리스너는 상시대기 시키는겨...?
     document.addEventListener('mousemove', UI.onDocumentMouseMove);
     document.addEventListener('click', UI.onDocumentClick);
     window.addEventListener('resize', UI.onWindowResize);
@@ -58,22 +53,21 @@ export function createSph(radius, textureName, position, rotation) {
     // Create spheres
     // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
-    // const count = myGeo.attributes.position.count;
-    // myGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
-    // const color = new THREE.Color();
-    // const positions1 = myGeo.attributes.position;
-    // const colors1 = myGeo.attributes.color;
-    // for (let i = 0; i < count; i++) { // 메쉬 구성요소에 일일히 색을 입히는 것 같음.
-    //   color.setHSL((positions1.getY(i) / radius + 1) / 2, 1.0, 0.5, THREE.SRGBColorSpace);
-    //   colors1.setXYZ(i, color.r, color.g, color.b);
-    // }
     let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
     let material = new THREE.MeshBasicMaterial({ map: texture });
     // Create mesh from Geometry & Material. ADD TO THE SCENE!
     let mesh = new THREE.Mesh(myGeo, material);
     let textured = new THREE.Mesh(myGeo, material);
     mesh.add(textured);
-    // mesh.position.x = 0;
+    let acceptRange = PHYS.side - radius * 0.5;
+    if (position[0] < -acceptRange)
+        position[0] = -acceptRange;
+    else if (position[0] > acceptRange)
+        position[0] = acceptRange;
+    if (position[1] < -acceptRange)
+        position[1] = -acceptRange;
+    else if (position[1] > acceptRange)
+        position[1] = acceptRange;
     mesh.position.set(position[0], position[1], position[2]); // Type of pos must be THREE.vector3
     mesh.rotation.set(rotation[0], rotation[1], rotation[2]); // Type of rotation must be THREE.euler
     const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], false, radius);
@@ -91,10 +85,9 @@ function createBorder(side, height, scene) {
         color: new THREE.Color("white")
     });
     let mesh = new THREE.Mesh(myGeo, material);
-    mesh.position.set(0, 0, (thickness - 0.5 * height));
-    // const physicalElem = new PHYS.Physical(mesh, [0,0,0], true);
+    mesh.position.set(0, 0, (thickness - 0.5 * height + PHYS.dropMargin));
+    // 충돌 따로 하드코딩 해서 구현
     scene.add(mesh);
-    //
     let distance = (side - thickness * 0.5);
     let sideArray = [[0, distance],
         [0, -distance],
@@ -118,7 +111,7 @@ function createBorder(side, height, scene) {
         let mesh1 = new THREE.Mesh(myGeo1, material1);
         mesh1.position.set(0, 0, -height);
         mesh1.rotateOnWorldAxis(rotaionArray[i], 0.5 * Math.PI);
-        // const physicalElem1 = new PHYS.Physical(mesh1, [0,0,0], true);
+        // 충돌 따로 하드코딩 해서 구현
         mesh1.position.set(sideArray[i][0], sideArray[i][1], 0);
         scene.add(mesh1);
     }
@@ -135,19 +128,8 @@ function animate() {
 }
 // scene is referred at ACTUAL render function.
 function render() {
-    // 아하 마우스 위치랑 카메라 위치랑 같을 때 까지 움직이는 거구나. constant 가 너무 높으면 instable 해 질 수 있지.
-    // 이런식으로 smooth transition 을 구현하네. physics 에 쓸 것은 아니지만... 
-    // UI (회전) 같은 데엔 쓸 수 있겠다 싶음.
-    // camera.position.x += (mouseX - camera.position.x) * 0.05;
-    // camera.position.y += (- mouseY - camera.position.y) * 0.05;
-    // 여기에 리소스 낭비하게 만들고 싶진 않음...
     PHYS.physics(PHYS.sphs);
     UI.debugging(debTab);
-    // UI.setCameraStatus((UI.getAngle ) * Math.PI, 0.25* Math.PI, 900 * 1.4);
-    // camera.rotateOnWorldAxis(
-    //   new THREE.Vector3(0,0,1),
-    //   ((UI.getAngle ) * Math.PI));
-    // camera.lookAt(scene.position);
     renderer.render(scene, camera); // OF COURSE we use prepared renderer.
 }
 //# sourceMappingURL=script.js.map

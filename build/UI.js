@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { camera, scene, createSph, fps } from './script.js';
-import { sphs, side, height } from './physics.js';
+import { sphs, side, height, dropMargin } from './physics.js';
 import { MathUtils, Vector3 } from 'three';
 let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0;
 let cameraX = 0, cameraY = 0;
@@ -16,8 +16,6 @@ export let container = document.getElementById('container');
 export let w_width = container.clientWidth;
 export let w_height = container.clientHeight;
 export let w_ratio = w_height / w_width; // Not sure this is right......
-// let windowHalfX = window.innerWidth / 2;
-// let windowHalfY = window.innerHeight / 2;
 let windowHalfX = container.clientWidth / 2 + container.offsetLeft;
 let containerWidth = container.clientWidth / 2;
 let containerHeight = container.clientHeight / 2;
@@ -27,9 +25,6 @@ export let currentTheta = 0.25 * Math.PI, targetTheta = 0.25 * Math.PI;
 export let currentRadi = 900 * 1.5, targetRadi = 900 * 1.5;
 let transitionTime = 500;
 let noKeyInput = false;
-// export let cameraPhi:number = 0;
-// export let cameraTheta:number = Math.PI * 0.25;
-// export let cameraR:number = 900 * 1.4;
 export function onWindowResize() {
     // windowHalfX = window.innerWidth / 2;
     // windowHalfY = window.innerHeight / 2;
@@ -52,7 +47,7 @@ export function onDocumentMouseMove(event) {
 export function onDocumentClick(event) {
     clickX = pos.x;
     clickY = pos.y;
-    let margin = 10;
+    let margin = 5;
     if (clickX <= -side)
         clickX = -side + margin;
     else if (clickX >= side)
@@ -61,7 +56,7 @@ export function onDocumentClick(event) {
         clickY = -side + margin;
     else if (clickY >= side)
         clickY = side - margin;
-    let newMesh = createSph(Math.random() * 20 + 1, 'test', [clickX, clickY, 0.5 * height], [Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI, 0]); // This might not be random.
+    let newMesh = createSph(randomRadius(), 'test', [clickX, clickY, 0.5 * height + dropMargin], [Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI, 0]); // This might not be random.
     scene.add(newMesh);
 }
 export function onKeydown(event) {
@@ -146,14 +141,25 @@ export function debugging(debTab) {
 export let getAngle = 0;
 export function onCamDebugChanged(event) {
     // @ts-ignore
-    // camera.position.x = event.currentTarget!.camX.value; 
-    // @ts-ignore
-    // camera.position.y = event.currentTarget!.camY.value;
-    // @ts-ignore
     let camDistance = event.currentTarget.camR.value;
     // @ts-ignore
     getAngle = Number(event.currentTarget.camTh.value);
     // setCameraStatus((getAngle) * Math.PI, 0.25* Math.PI, 900 * 1.4);
     setCameraStatus((getAngle) * Math.PI, 0.25 * Math.PI, camDistance);
+}
+function randomRadius() {
+    let rnd = Math.random();
+    if (rnd < 0.3) {
+        return 15;
+    }
+    else if (rnd < 0.5) {
+        return 20;
+    }
+    else if (rnd < 0.7) {
+        return 25;
+    }
+    else {
+        return 30;
+    }
 }
 //# sourceMappingURL=UI.js.map

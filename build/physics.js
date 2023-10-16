@@ -4,10 +4,12 @@ export let G = new THREE.Vector3(0, 0, -gravity);
 export let sphs = []; // managing all fruits
 export let side = 100;
 export let height = 300;
+export let dropMargin = 30;
 let halfHeight = height * 0.5;
 let floorElasticity = 0.48;
-let sideWallElasticity = 0.9;
+let sideWallElasticity = 0.48;
 let stillness = 4 * gravity;
+let wallOverwrapCoeff = 0.1;
 let tmp = new THREE.Vector3();
 // should consider frame
 export class Physical {
@@ -54,16 +56,92 @@ export class Physical {
                 this.mesh.position.z += this.vel.z - (this.mesh.position.z - this.radius + halfHeight) * floorElasticity;
             }
         }
-        // side walls (set them at \pm side)
-        let nextXpos = this.mesh.position.x + this.vel.x;
-        if (nextXpos + this.radius > side || this.radius - nextXpos > side) { // apply if above works
-            this.isCollide = true;
-            this.vel.x = -this.vel.x * sideWallElasticity;
+        // side wall edge
+        let edgeDist = new THREE.Vector3();
+        let edgeCollisionVector = new THREE.Vector3();
+        let overwrap = 0;
+        if (this.mesh.position.z > halfHeight) {
+            edgeDist.set(this.mesh.position.x + this.vel.x - side, 0, this.mesh.position.z + this.vel.z - halfHeight);
+            if (edgeDist.length() < this.radius) {
+                this.isCollide = true;
+                edgeCollisionVector = this.vel.projectOnVector(edgeDist.normalize());
+                this.vel.add(edgeCollisionVector.negate());
+            }
+            edgeDist.set(this.mesh.position.x + this.vel.x + side, 0, this.mesh.position.z + this.vel.z - halfHeight);
+            if (edgeDist.length() < this.radius) {
+                this.isCollide = true;
+                edgeCollisionVector = this.vel.projectOnVector(edgeDist.normalize());
+                this.vel.add(edgeCollisionVector.negate());
+            }
+            edgeDist.set(0, this.mesh.position.y + this.vel.y - side, this.mesh.position.z + this.vel.z - halfHeight);
+            if (edgeDist.length() < this.radius) {
+                this.isCollide = true;
+                edgeCollisionVector = this.vel.projectOnVector(edgeDist.normalize());
+                this.vel.add(edgeCollisionVector.negate());
+            }
+            edgeDist.set(0, this.mesh.position.y + this.vel.y + side, this.mesh.position.z + this.vel.z - halfHeight);
+            if (edgeDist.length() < this.radius) {
+                this.isCollide = true;
+                edgeCollisionVector = this.vel.projectOnVector(edgeDist.normalize());
+                this.vel.add(edgeCollisionVector.negate());
+            }
         }
-        let nextYpos = this.mesh.position.y + this.vel.y;
-        if (nextYpos + this.radius > side || this.radius - nextYpos > side) { // apply if above works...
-            this.isCollide = true;
-            this.vel.y = -this.vel.y * sideWallElasticity;
+        else {
+            // side walls
+            let nextXpos = this.mesh.position.x + this.vel.x;
+            overwrap = nextXpos + this.radius - side;
+            if (overwrap > 0) { // apply if above works
+                this.isCollide = true;
+                this.vel.x = -Math.abs(this.vel.x) * sideWallElasticity;
+                this.mesh.position.x += this.vel.x;
+                //
+                overwrap = this.mesh.position.x + this.radius - side;
+                while (overwrap > 0) {
+                    this.vel.x += -overwrap * wallOverwrapCoeff;
+                    this.mesh.position.x += this.vel.x;
+                    overwrap = this.mesh.position.x + this.radius - side;
+                }
+            }
+            overwrap = this.radius - nextXpos - side;
+            if (overwrap > 0) {
+                this.isCollide = true;
+                this.vel.x = Math.abs(this.vel.x) * sideWallElasticity;
+                this.mesh.position.x += this.vel.x;
+                //
+                overwrap = -this.mesh.position.x + this.radius - side;
+                while (overwrap > 0) {
+                    this.vel.x += overwrap * wallOverwrapCoeff;
+                    this.mesh.position.x += this.vel.x;
+                    overwrap = -this.mesh.position.x + this.radius - side;
+                }
+            }
+            let nextYpos = this.mesh.position.y + this.vel.y;
+            overwrap = nextYpos + this.radius - side;
+            if (overwrap > 0) { // apply if above works
+                this.isCollide = true;
+                this.vel.y = -Math.abs(this.vel.y) * sideWallElasticity;
+                this.mesh.position.y += this.vel.y;
+                //
+                overwrap = this.mesh.position.y + this.radius - side;
+                while (overwrap > 0) {
+                    this.vel.y += -overwrap * wallOverwrapCoeff;
+                    this.mesh.position.y += this.vel.y;
+                    overwrap = this.mesh.position.y + this.radius - side;
+                }
+            }
+            overwrap = this.radius - nextYpos - side;
+            if (overwrap > 0) {
+                this.isCollide = true;
+                this.vel.y = Math.abs(this.vel.y) * sideWallElasticity;
+                this.mesh.position.y += this.vel.y;
+                //
+                overwrap = -this.mesh.position.y + this.radius - side;
+                while (overwrap > 0) {
+                    this.vel.y += overwrap * wallOverwrapCoeff;
+                    this.mesh.position.y += this.vel.y;
+                    overwrap = -this.mesh.position.y + this.radius - side;
+                }
+            }
         }
         // above code should be revised not to tunnel thru wall.
         // If I precalculate here, what about nextPosition()...? OK i use flag.
@@ -77,11 +155,7 @@ export class Physical {
                 // return;
             }
             // MATH...!!! 😢
-            // Use below variables... It seems complicated. 
-            this.vel;
-            x.vel;
-            this.mesh.position;
-            x.mesh.position;
+            // Use below variables... It seems complicated.
             let lineV = objA.sub(objB).normalize();
             let normalVelA = this.vel.clone().projectOnVector(lineV.negate());
             let normalVelB = x.vel.clone().projectOnVector(lineV);
@@ -92,6 +166,13 @@ export class Physical {
             x.vel = lineV.clone().multiplyScalar((amplA * (2 * this.mass) + amplB * (x.mass - this.mass)) / massSum);
             this.mesh.position.add(this.vel);
             x.mesh.position.add(x.vel);
+            let overwrap = (this.radius + x.radius) - tmp.subVectors(this.mesh.position, x.mesh.position).length();
+            if (overwrap > 0) {
+                lineV.multiplyScalar(overwrap);
+                x.vel.add(lineV);
+                lineV.negate();
+                this.vel.add(lineV);
+            }
         }
     }
     sphereFusion(sph) {
@@ -109,10 +190,6 @@ export function physics(elements) {
                 continue;
             elements[i].checkCollisionWith(elements[j]);
         }
-        // let someGroupThatPossiblyCollideWith: Physical[] = [elements[1]];    // This line should be elaborated later...!!! el[1] is used as dummy.
-        // someGroupThatPossiblyCollideWith.forEach((x: Physical) => {
-        //   elements[i].checkCollisionWith(x);
-        // });
         // After all are done move to next position.
         elements[i].nextPosition(); // and also accelerate.
     }
