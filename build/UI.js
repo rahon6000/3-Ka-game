@@ -7,7 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { camera, scene, createColorSph, fps } from './script.js';
+import { camera, scene, renderer, 
+// createSph,
+createColorSph, guideLine, fps } from './script.js';
 import { sphs, side, height, dropMargin } from './physics.js';
 import { MathUtils, Vector3 } from 'three';
 let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0;
@@ -16,25 +18,28 @@ export let w_width = container.clientWidth;
 export let w_height = container.clientHeight;
 export let w_ratio = w_height / w_width; // Not sure this is right......
 let windowHalfX = container.clientWidth / 2 + container.offsetLeft;
+let windowHalfY = container.clientHeight / 2 + container.offsetTop;
 let containerWidth = container.clientWidth / 2;
 let containerHeight = container.clientHeight / 2;
-let windowHalfY = container.clientHeight / 2 + container.offsetTop;
+let upNextPanel = document.getElementById('upNext');
+let instructionPanel = document.getElementById('instruction');
 export let currentPhi = 0.25 * Math.PI + 0.001, targetPhi = 0.25 * Math.PI + 0.001;
 export let currentTheta = 0.25 * Math.PI, targetTheta = 0.25 * Math.PI;
 export let currentRadi = 900 * 1.5, targetRadi = 900 * 1.5;
 let transitionTime = 500;
 let noKeyInput = false;
 export function onWindowResize() {
-    // windowHalfX = window.innerWidth / 2;
-    // windowHalfY = window.innerHeight / 2;
+    windowHalfX = container.clientWidth / 2 + container.offsetLeft;
+    windowHalfY = container.clientHeight / 2 + container.offsetTop;
+    containerWidth = container.clientWidth / 2;
+    containerHeight = container.clientHeight / 2;
     // // 창 크기 변환시 camera 를 업데이트 한다.
-    // camera.aspect = window.innerWidth / window.innerHeight;
-    // camera.updateProjectionMatrix();
-    // renderer.setSize(500, 500);
-    // renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = containerWidth / containerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
 }
-let vec = new Vector3(); // recycle
-let pos = new Vector3(); // recycle
+let vec = new Vector3(); // recycle. normalized mouse position in camera view.
+let pos = new Vector3(); // recycle. world position under the mouse.
 export function onDocumentMouseMove(event) {
     mouseX = (event.clientX - windowHalfX);
     mouseY = -(event.clientY - windowHalfY);
@@ -42,10 +47,21 @@ export function onDocumentMouseMove(event) {
     vec.unproject(camera);
     vec.sub(camera.position).normalize();
     pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height - camera.position.z) / vec.z));
+    if (isInRange(pos, side)) {
+        //@ts-ignore
+        guideLine.material.opacity = 0.5;
+        guideLine.position.set(pos.x, pos.y, 0);
+    }
+    else {
+        //@ts-ignore
+        guideLine.material.opacity = 0;
+    }
 }
 export function onDocumentClick(event) {
-    clickX = pos.x;
-    clickY = pos.y;
+    if (sphs.length > 0 && sphs[sphs.length - 1].mesh.position.z > (0.5 * height))
+        return;
+    clickX = pos.x + (Math.random() - 0.5);
+    clickY = pos.y + (Math.random() - 0.5);
     let margin = 5;
     if (clickX <= -side)
         clickX = -side + margin;
@@ -144,17 +160,19 @@ export function debugging(debTab) {
         debTab.item(2).innerHTML = "(" + camera.position.x.toFixed() + ", " + camera.position.y.toFixed() + ")";
         // @ts-ignore
         debTab.item(3).innerHTML = "(" + sphs.length + ")";
-        let position = sphs[0].getPosFromMesh();
-        // @ts-ignore
-        debTab.item(4).innerHTML = "(" + Math.round(position[0]) + "," +
-            Math.round(position[1]) + "," +
-            Math.round(position[2]) + ")";
-        let vel = sphs[0].getVelFromMesh();
-        // @ts-ignore
-        debTab.item(5).innerHTML = "(" + Math.round(vel[0]) + "," +
-            Math.round(vel[1]) + "," +
-            Math.round(vel[2]) + ")";
-        debTab.item(6).innerHTML = "(" + fps.toPrecision(3) + ")";
+        if (sphs.length > 0) {
+            let position = sphs[0].getPosFromMesh();
+            // @ts-ignore
+            debTab.item(4).innerHTML = "(" + Math.round(position[0]) + "," +
+                Math.round(position[1]) + "," +
+                Math.round(position[2]) + ")";
+            let vel = sphs[0].getVelFromMesh();
+            // @ts-ignore
+            debTab.item(5).innerHTML = "(" + Math.round(vel[0]) + "," +
+                Math.round(vel[1]) + "," +
+                Math.round(vel[2]) + ")";
+            debTab.item(6).innerHTML = "(" + fps.toPrecision(3) + ")";
+        }
         let sphereDisplay = "";
         for (let i = 0; i < sphs.length; i++) {
             sphereDisplay += "<tr><td>" +
@@ -168,7 +186,7 @@ export function debugging(debTab) {
         (_a = debTab.namedItem("spheres")) === null || _a === void 0 ? void 0 : _a.innerHTML = sphereDisplay;
     }
     catch (error) {
-        console.log('debuging error occered');
+        console.log(error);
     }
 }
 export let getAngle = 0;
@@ -179,5 +197,8 @@ export function onCamDebugChanged(event) {
     getAngle = Number(event.currentTarget.camTh.value);
     // setCameraStatus((getAngle) * Math.PI, 0.25* Math.PI, 900 * 1.4);
     setCameraStatus((getAngle) * Math.PI, 0.25 * Math.PI, camDistance);
+}
+function isInRange(pos, side) {
+    return (pos.x < side) && (pos.x > -side) && (pos.y < side) && (pos.y > -side);
 }
 //# sourceMappingURL=UI.js.map

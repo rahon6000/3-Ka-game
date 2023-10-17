@@ -10,6 +10,7 @@ export let renderer;
 export let fps = 0;
 let then;
 let now;
+export let guideLine;
 const zAxis = new THREE.Vector3(0, 0, 1);
 let debTab = document.getElementsByClassName("debTab");
 init();
@@ -17,12 +18,6 @@ animate();
 function init() {
     var _a;
     container = UI.container;
-    console.log("cl-h : " + container.clientHeight);
-    console.log("cl-w : " + container.clientWidth);
-    console.log("cl-l : " + container.clientLeft);
-    console.log("cl-t : " + container.clientTop);
-    console.log("of-l : " + container.offsetLeft);
-    console.log("of-t : " + container.offsetTop);
     // camera = new THREE.OrthographicCamera();
     camera = new THREE.PerspectiveCamera(20, UI.w_width / UI.w_height, 1, 10000);
     UI.smoothCameraSet(UI.currentPhi, UI.currentTheta, UI.currentRadi);
@@ -33,14 +28,16 @@ function init() {
     light.position.set(0, 0, 1);
     scene.add(light);
     let border = createBorder(PHYS.side, PHYS.height, scene);
-    let mesh = createSph(2, 'test', [0, 0, 0.5 * PHYS.height], [0, 0, 0]);
-    scene.add(mesh);
+    let guideLine = createGuide();
+    // let mesh = createSph(2, 'test', [0, 0, 0.5 * PHYS.height], [0, 0, 0]);
+    // scene.add(mesh);
     // Finally, (prepare) Renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    // renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setPixelRatio(UI.w_ratio);
-    // renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
-    renderer.setSize(UI.w_width, UI.w_height);
+    // renderer.setPixelRatio(UI.w_ratio);
+    // renderer.setSize(UI.w_width, UI.w_height);
+    renderer.setPixelRatio(1);
+    renderer.setSize(300, 500);
+    UI.onWindowResize();
     container.appendChild(renderer.domElement);
     document.addEventListener('mousemove', UI.onDocumentMouseMove);
     document.addEventListener('click', UI.onDocumentClick);
@@ -50,33 +47,28 @@ function init() {
     (_a = document.getElementById("camPos")) === null || _a === void 0 ? void 0 : _a.addEventListener('input', UI.onCamDebugChanged);
 }
 // Refactor sph appearance part.
-export function createSph(rank, textureName, position, rotation) {
-    let radius = 20; //config[rank].radius;
-    // Create spheres
-    // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
-    let myGeo = new THREE.SphereGeometry(radius, 32, 16);
-    let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
-    let material = new THREE.MeshBasicMaterial({ map: texture });
-    // Create mesh from Geometry & Material. ADD TO THE SCENE!
-    let mesh = new THREE.Mesh(myGeo, material);
-    let textured = new THREE.Mesh(myGeo, material);
-    mesh.add(textured);
-    let acceptRange = PHYS.side - radius * 0.51;
-    if (position[0] < -acceptRange)
-        position[0] = -acceptRange;
-    else if (position[0] > acceptRange)
-        position[0] = acceptRange;
-    if (position[1] < -acceptRange)
-        position[1] = -acceptRange;
-    else if (position[1] > acceptRange)
-        position[1] = acceptRange;
-    mesh.position.set(position[0], position[1], position[2]); // Type of pos must be THREE.vector3
-    mesh.rotation.set(rotation[0], rotation[1], rotation[2]); // Type of rotation must be THREE.euler
-    const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], rank, radius);
-    PHYS.sphs.push(physicalElem);
-    console.log('sphere created.');
-    return mesh;
-}
+// export function createSph(rank: number, textureName: string, position: number[], rotation: number[]) {
+//   let radius = 20; //config[rank].radius;
+//   // Create spheres
+//   // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
+//   let myGeo = new THREE.SphereGeometry(radius, 32, 16);
+//   let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
+//   let material = new THREE.MeshBasicMaterial({ map: texture });
+//   // Create mesh from Geometry & Material. ADD TO THE SCENE!
+//   let mesh = new THREE.Mesh(myGeo, material);
+//   let textured = new THREE.Mesh(myGeo, material);
+//   mesh.add(textured);
+//   let acceptRange = PHYS.side - radius * 0.51;
+//   if (position[0] < -acceptRange) position[0] = -acceptRange;
+//   else if (position[0] > acceptRange) position[0] = acceptRange;
+//   if (position[1] < -acceptRange) position[1] = -acceptRange;
+//   else if (position[1] > acceptRange) position[1] = acceptRange;
+//   mesh.position.set(position[0], position[1], position[2]); // Type of pos must be THREE.vector3
+//   mesh.rotation.set(rotation[0], rotation[1], rotation[2]); // Type of rotation must be THREE.euler
+//   const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], rank, radius);
+//   PHYS.sphs.push(physicalElem);
+//   return mesh;
+// }
 export function createColorSph(rank, position, rotation) {
     // Create spheres
     // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
@@ -101,7 +93,6 @@ export function createColorSph(rank, position, rotation) {
     mesh.rotation.set(rotation[0], rotation[1], rotation[2]); // Type of rotation must be THREE.euler
     const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], rank, radius);
     PHYS.sphs.push(physicalElem);
-    console.log('sphere created.');
     return mesh;
 }
 export function rankUpSph(sph) {
@@ -109,7 +100,6 @@ export function rankUpSph(sph) {
     let radius = config[newRank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
     let material = new THREE.MeshBasicMaterial({ color: config[newRank].color });
-    // sph.mesh = new THREE.Mesh(myGeo, material); // should refactor repeated part.
     sph.mesh.geometry = myGeo;
     sph.mesh.material = material;
     sph.radius = radius;
@@ -126,7 +116,6 @@ function createBorder(side, height, scene) {
     });
     let mesh = new THREE.Mesh(myGeo, material);
     mesh.position.set(0, 0, (-0.5 * (thickness + height)));
-    // 충돌 따로 하드코딩 해서 구현
     scene.add(mesh);
     let distance = (side - thickness * 0.5);
     let sideArray = [[0, distance],
@@ -155,7 +144,14 @@ function createBorder(side, height, scene) {
         mesh1.position.set(sideArray[i][0], sideArray[i][1], 0);
         scene.add(mesh1);
     }
-    console.log('plate created.');
+}
+function createGuide() {
+    let myGeo = new THREE.CylinderGeometry(1, 1, PHYS.height, 5, 1, true);
+    let myMaterial = new THREE.MeshBasicMaterial({ opacity: 0.3, transparent: true, color: "white" });
+    guideLine = new THREE.Mesh(myGeo, myMaterial);
+    guideLine.position.set(0, 0, 0);
+    guideLine.rotateX(Math.PI * 0.5);
+    scene.add(guideLine);
 }
 // 얘가 한번만이 아닌 계속 작동하는 원리는 뭐야?
 function animate() {

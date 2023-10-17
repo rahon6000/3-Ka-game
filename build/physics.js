@@ -193,7 +193,6 @@ export class Physical {
         }
     }
     sphereFusion(sph) {
-        console.log("same sphs touched!");
         this.mesh.position.add(sph.mesh.position).multiplyScalar(0.5);
         this.vel.multiplyScalar(0);
         this.isCollide = true;

@@ -11,10 +11,56 @@
     td {
       border: 1px solid gray;
     }
+    #outer {
+      display: flex;
+      flex-direction: column;
+      width: 95vw;
+      height: 95vh;
+      margin:auto;
+    }
+    #bodyContainer {
+      display: flex;
+      flex: 95%;
+    }
+    #bodyContainer {
+      flex-direction: row;
+    }
+    @media (max-width: 800px){
+      #bodyContainer {
+        flex-direction: column;
+      }
+    }    
     #container {
-      width: 300px;
-      margin: auto;
-      height: 500px;
+      flex: 69%;
+      border: 1px solid lightblue;
+    }
+    @media (max-width: 800px){
+      #container {
+        flex: 69%;
+        border: 1px solid lightblue;
+      }
+    }
+    #subPanel {
+      flex: 29%;
+      display: flex;
+      flex-direction: column;
+    }
+    @media (max-width: 800px) {
+      #subPanel {
+        flex: 29%;
+        display: flex;
+        flex-direction: row;
+      }
+    }
+    #upNext, #instruction {
+      flex: 49%;
+      border: 1px solid lightblue;
+      text-align: center;
+      background-color: skyblue;
+    }
+    #info {
+      flex: 5%;
+      text-align: center;
     }
     #debugContiner {
       margin:auto;
@@ -22,12 +68,27 @@
     }
     * {
       user-select: none;
+      text-decoration: none;
     }
   </style>
 </head>
 <body oncontextmenu="return false;">
-  <div id="container"></div>
-  <div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - vertex colors</div>
+  <div id="outer">
+    <div id="bodyContainer">
+
+      <div id="container"></div>
+      <div id="subPanel">
+        <div id="upNext"><p>Comming up next!</p></div>
+        <div id="instruction"><p>🍒🍓🍇🍊🍅🍎🍐🍑🍍🍈🍉</p></div>
+      </div>
+
+    </div>
+
+    <div id="info">
+      Powered by 
+      <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a>
+    </div>
+  </div>
 
   <!-- Using CDN -->
   <!-- <script type="importmap">

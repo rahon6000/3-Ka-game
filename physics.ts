@@ -75,8 +75,8 @@ export class Physical {
         this.vel.z = 0;
         this.mesh.position.z = this.radius - halfHeight;
       } else {
-        this.mesh.position.z =  this.radius - halfHeight;
-        this.vel.z = Math.floor(Math.abs(this.vel.z)*2) * 0.5 * floorElasticity
+        this.mesh.position.z = this.radius - halfHeight;
+        this.vel.z = Math.floor(Math.abs(this.vel.z) * 2) * 0.5 * floorElasticity
         this.mesh.position.z += this.vel.z;
       }
     }
@@ -113,18 +113,18 @@ export class Physical {
       // side walls
       let nextXpos = this.mesh.position.x + this.vel.x;
       overwrap = nextXpos + this.radius - side;
-      if (overwrap > 0 ) { // apply if above works
+      if (overwrap > 0) { // apply if above works
         this.isCollide = true;
         this.vel.x = -Math.abs(this.vel.x) * sideWallElasticity;
         this.mesh.position.x += this.vel.x;
         //
         overwrap = this.mesh.position.x + this.radius - side;
-        while( overwrap > 0 ){
+        while (overwrap > 0) {
           this.vel.x += -overwrap * wallOverwrapCoeff;
           this.mesh.position.x += this.vel.x;
           overwrap = this.mesh.position.x + this.radius - side;
         }
-      } 
+      }
       overwrap = this.radius - nextXpos - side;
       if (overwrap > 0) {
         this.isCollide = true;
@@ -132,7 +132,7 @@ export class Physical {
         this.mesh.position.x += this.vel.x;
         //
         overwrap = -this.mesh.position.x + this.radius - side;
-        while( overwrap > 0 ){
+        while (overwrap > 0) {
           this.vel.x += overwrap * wallOverwrapCoeff;
           this.mesh.position.x += this.vel.x;
           overwrap = -this.mesh.position.x + this.radius - side;
@@ -140,18 +140,18 @@ export class Physical {
       }
       let nextYpos = this.mesh.position.y + this.vel.y;
       overwrap = nextYpos + this.radius - side;
-      if (overwrap > 0 ) { // apply if above works
+      if (overwrap > 0) { // apply if above works
         this.isCollide = true;
         this.vel.y = -Math.abs(this.vel.y) * sideWallElasticity;
         this.mesh.position.y += this.vel.y;
         //
         overwrap = this.mesh.position.y + this.radius - side;
-        while( overwrap > 0 ){
+        while (overwrap > 0) {
           this.vel.y += -overwrap * wallOverwrapCoeff;
           this.mesh.position.y += this.vel.y;
           overwrap = this.mesh.position.y + this.radius - side;
         }
-      } 
+      }
       overwrap = this.radius - nextYpos - side;
       if (overwrap > 0) {
         this.isCollide = true;
@@ -159,7 +159,7 @@ export class Physical {
         this.mesh.position.y += this.vel.y;
         //
         overwrap = -this.mesh.position.y + this.radius - side;
-        while( overwrap > 0 ){
+        while (overwrap > 0) {
           this.vel.y += overwrap * wallOverwrapCoeff;
           this.mesh.position.y += this.vel.y;
           overwrap = -this.mesh.position.y + this.radius - side;
@@ -200,7 +200,7 @@ export class Physical {
       this.mesh.position.add(this.vel);
       x.mesh.position.add(x.vel);
       let overwrap = (this.radius + x.radius) - tmp.subVectors(this.mesh.position, x.mesh.position).length();
-      if( overwrap > 0){
+      if (overwrap > 0) {
         lineV.multiplyScalar(overwrap * 0.5); // reposition to just-contact.
         this.mesh.position.add(lineV);
         x.mesh.position.sub(lineV);
@@ -212,12 +212,11 @@ export class Physical {
   }
 
   sphereFusion(sph: Physical) {
-    console.log("same sphs touched!");
     this.mesh.position.add(sph.mesh.position).multiplyScalar(0.5);
     this.vel.multiplyScalar(0);
     this.isCollide = true;
     rankUpSph(this);
-    sph.mesh.position.set(0,0,10000);
+    sph.mesh.position.set(0, 0, 10000);
     sph.vel.multiplyScalar(0);
     sph.isReservedToDestroyed = true;
     sph.isCollide = true;
@@ -241,8 +240,8 @@ export function physics(elements: Physical[]) {
   }
 
   // Remove sphes
-  for( let i = 0; i < elements.length; i ++) {
-    if(elements[i].isReservedToDestroyed) {
+  for (let i = 0; i < elements.length; i++) {
+    if (elements[i].isReservedToDestroyed) {
       elements = elements.splice(i, 1);
     }
   }
