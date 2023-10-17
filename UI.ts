@@ -128,6 +128,20 @@ export async function smoothCameraSet(Phi:number, Theta:number, Radi:number) {
   },20);
 }
 
+// function randomRadius(): number { // radius should be less than entry margin...
+//   let rnd = Math.random();
+//   if (rnd < 0.3) {
+//     return 15;
+//   } else if (rnd < 0.5) {
+//     return 20;
+//   } else if (rnd < 0.7) {
+//     return 25;
+//   } else {
+//     return 30;
+//   }
+// }
+
+
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
@@ -153,9 +167,22 @@ export function debugging(debTab: HTMLCollectionOf<Element>) {
     Math.round(vel[1]) + ","+
     Math.round(vel[2]) + ")";
     debTab.item(6)!.innerHTML = "(" + fps.toPrecision(3) + ")";
+
+    let sphereDisplay = "";
+    for(let i = 0; i <sphs.length; i++){
+      sphereDisplay += "<tr><td>" + 
+      i + "</td><td>" +
+      sphs[i].rank.toFixed() + "</td><td>" +
+      sphs[i].radius.toFixed() + "</td><td>" +
+      sphs[i].mass.toFixed() +
+      "</td><tr>";
+    }
+    // @ts-ignore
+    debTab.namedItem("spheres")?.innerHTML = sphereDisplay;
   } catch (error) {
-    
+    console.log('debuging error occered');
   }
+
 }
 export let getAngle: number = 0;
 export function onCamDebugChanged(event: Event){
@@ -166,17 +193,3 @@ export function onCamDebugChanged(event: Event){
   // setCameraStatus((getAngle) * Math.PI, 0.25* Math.PI, 900 * 1.4);
   setCameraStatus((getAngle) * Math.PI, 0.25 * Math.PI, camDistance );
 }
-
-function randomRadius(): number { // radius should be less than entry margin...
-  let rnd = Math.random();
-  if (rnd < 0.3) {
-    return 15;
-  } else if (rnd < 0.5) {
-    return 20;
-  } else if (rnd < 0.7) {
-    return 25;
-  } else {
-    return 30;
-  }
-}
-

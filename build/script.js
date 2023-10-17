@@ -33,7 +33,7 @@ function init() {
     light.position.set(0, 0, 1);
     scene.add(light);
     let border = createBorder(PHYS.side, PHYS.height, scene);
-    let mesh = createSph(20, 'test', [0, 0, 0.5 * PHYS.height], [0, 0, 0]);
+    let mesh = createSph(2, 'test', [0, 0, 0.5 * PHYS.height], [0, 0, 0]);
     scene.add(mesh);
     // Finally, (prepare) Renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -49,7 +49,9 @@ function init() {
     // Debug UI
     (_a = document.getElementById("camPos")) === null || _a === void 0 ? void 0 : _a.addEventListener('input', UI.onCamDebugChanged);
 }
-export function createSph(radius, textureName, position, rotation) {
+// Refactor sph appearance part.
+export function createSph(rank, textureName, position, rotation) {
+    let radius = 20; //config[rank].radius;
     // Create spheres
     // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
@@ -59,7 +61,7 @@ export function createSph(radius, textureName, position, rotation) {
     let mesh = new THREE.Mesh(myGeo, material);
     let textured = new THREE.Mesh(myGeo, material);
     mesh.add(textured);
-    let acceptRange = PHYS.side - radius * 0.5;
+    let acceptRange = PHYS.side - radius * 0.51;
     if (position[0] < -acceptRange)
         position[0] = -acceptRange;
     else if (position[0] > acceptRange)
@@ -70,23 +72,23 @@ export function createSph(radius, textureName, position, rotation) {
         position[1] = acceptRange;
     mesh.position.set(position[0], position[1], position[2]); // Type of pos must be THREE.vector3
     mesh.rotation.set(rotation[0], rotation[1], rotation[2]); // Type of rotation must be THREE.euler
-    const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], false, radius);
+    const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], rank, radius);
     PHYS.sphs.push(physicalElem);
     console.log('sphere created.');
     return mesh;
 }
-export function createColorSph(Rank, position, rotation) {
+export function createColorSph(rank, position, rotation) {
     // Create spheres
     // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
-    let radius = config[Rank].radius;
+    let radius = config[rank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
     // let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
-    let material = new THREE.MeshBasicMaterial({ color: config[Rank].color });
+    let material = new THREE.MeshBasicMaterial({ color: config[rank].color });
     // Create mesh from Geometry & Material. ADD TO THE SCENE!
     let mesh = new THREE.Mesh(myGeo, material);
     let textured = new THREE.Mesh(myGeo, material);
     mesh.add(textured);
-    let acceptRange = PHYS.side - radius * 0.5;
+    let acceptRange = PHYS.side - radius * 0.51;
     if (position[0] < -acceptRange)
         position[0] = -acceptRange;
     else if (position[0] > acceptRange)
@@ -97,10 +99,21 @@ export function createColorSph(Rank, position, rotation) {
         position[1] = acceptRange;
     mesh.position.set(position[0], position[1], position[2]); // Type of pos must be THREE.vector3
     mesh.rotation.set(rotation[0], rotation[1], rotation[2]); // Type of rotation must be THREE.euler
-    const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], false, radius);
+    const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], rank, radius);
     PHYS.sphs.push(physicalElem);
     console.log('sphere created.');
     return mesh;
+}
+export function rankUpSph(sph) {
+    let newRank = sph.rank + 1;
+    let radius = config[newRank].radius;
+    let myGeo = new THREE.SphereGeometry(radius, 32, 16);
+    let material = new THREE.MeshBasicMaterial({ color: config[newRank].color });
+    // sph.mesh = new THREE.Mesh(myGeo, material); // should refactor repeated part.
+    sph.mesh.geometry = myGeo;
+    sph.mesh.material = material;
+    sph.radius = radius;
+    sph.rank = newRank;
 }
 function createBorder(side, height, scene) {
     let thickness = 10;
@@ -159,7 +172,7 @@ function render() {
     UI.debugging(debTab);
     renderer.render(scene, camera); // OF COURSE we use prepared renderer.
 }
-// 🍉 Sphere configuration 🍉
+// 🍉 Sphere configuration 🍉 (should be saved in .json, not hard-coded.)
 export let config = [
     {
         radius: 10,

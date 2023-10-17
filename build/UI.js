@@ -118,6 +118,18 @@ export function smoothCameraSet(Phi, Theta, Radi) {
         }, 20);
     });
 }
+// function randomRadius(): number { // radius should be less than entry margin...
+//   let rnd = Math.random();
+//   if (rnd < 0.3) {
+//     return 15;
+//   } else if (rnd < 0.5) {
+//     return 20;
+//   } else if (rnd < 0.7) {
+//     return 25;
+//   } else {
+//     return 30;
+//   }
+// }
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
@@ -125,6 +137,7 @@ export function smoothCameraSet(Phi, Theta, Radi) {
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
 export function debugging(debTab) {
+    var _a;
     try {
         debTab.item(0).innerHTML = "(" + pos.x.toFixed(2) + ", " + pos.y.toFixed(2) + ")";
         debTab.item(1).innerHTML = "(" + windowHalfX + ", " + windowHalfY + ")";
@@ -142,8 +155,20 @@ export function debugging(debTab) {
             Math.round(vel[1]) + "," +
             Math.round(vel[2]) + ")";
         debTab.item(6).innerHTML = "(" + fps.toPrecision(3) + ")";
+        let sphereDisplay = "";
+        for (let i = 0; i < sphs.length; i++) {
+            sphereDisplay += "<tr><td>" +
+                i + "</td><td>" +
+                sphs[i].rank.toFixed() + "</td><td>" +
+                sphs[i].radius.toFixed() + "</td><td>" +
+                sphs[i].mass.toFixed() +
+                "</td><tr>";
+        }
+        // @ts-ignore
+        (_a = debTab.namedItem("spheres")) === null || _a === void 0 ? void 0 : _a.innerHTML = sphereDisplay;
     }
     catch (error) {
+        console.log('debuging error occered');
     }
 }
 export let getAngle = 0;
@@ -154,20 +179,5 @@ export function onCamDebugChanged(event) {
     getAngle = Number(event.currentTarget.camTh.value);
     // setCameraStatus((getAngle) * Math.PI, 0.25* Math.PI, 900 * 1.4);
     setCameraStatus((getAngle) * Math.PI, 0.25 * Math.PI, camDistance);
-}
-function randomRadius() {
-    let rnd = Math.random();
-    if (rnd < 0.3) {
-        return 15;
-    }
-    else if (rnd < 0.5) {
-        return 20;
-    }
-    else if (rnd < 0.7) {
-        return 25;
-    }
-    else {
-        return 30;
-    }
 }
 //# sourceMappingURL=UI.js.map

@@ -8,10 +8,11 @@ export declare class Physical {
     mass: number;
     mesh: THREE.Mesh;
     vel: THREE.Vector3;
-    isFixed: boolean;
+    rank: number;
     radius: number;
     isCollide: boolean;
-    constructor(mesh: THREE.Mesh, vel: number[], isFixed: boolean, radius: number);
+    isReservedToDestroyed: boolean;
+    constructor(mesh: THREE.Mesh, vel: number[], rank: number, radius: number);
     getPosFromMesh(): number[];
     getVelFromMesh(): number[];
     nextPosition(): void;
