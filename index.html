@@ -4,73 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🍉3-Ka game</title>
-  <style>
-    body {
-      background-color: lightblue;
-    }
-    td {
-      border: 1px solid gray;
-    }
-    #outer {
-      display: flex;
-      flex-direction: column;
-      width: 95vw;
-      height: 95vh;
-      margin:auto;
-    }
-    #bodyContainer {
-      display: flex;
-      flex: 95%;
-    }
-    #bodyContainer {
-      flex-direction: row;
-    }
-    @media (max-width: 800px){
-      #bodyContainer {
-        flex-direction: column;
-      }
-    }    
-    #container {
-      flex: 69%;
-      border: 1px solid lightblue;
-    }
-    @media (max-width: 800px){
-      #container {
-        flex: 69%;
-        border: 1px solid lightblue;
-      }
-    }
-    #subPanel {
-      flex: 29%;
-      display: flex;
-      flex-direction: column;
-    }
-    @media (max-width: 800px) {
-      #subPanel {
-        flex: 29%;
-        display: flex;
-        flex-direction: row;
-      }
-    }
-    #upNext, #instruction {
-      flex: 49%;
-      border: 1px solid lightblue;
-      text-align: center;
-      background-color: skyblue;
-    }
-    #info {
-      flex: 5%;
-      text-align: center;
-    }
-    #debugContiner {
-      margin:auto;
-      text-align: center;
-    }
-    * {
-      user-select: none;
-      text-decoration: none;
-    }
-  </style>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css">
+  </noscript>
 </head>
 <body oncontextmenu="return false;">
   <div id="outer">
@@ -78,13 +16,27 @@
 
       <div id="container"></div>
       <div id="subPanel">
-        <div id="upNext"><p>Comming up next!</p></div>
-        <div id="instruction"><p>🍒🍓🍇🍊🍅🍎🍐🍑🍍🍈🍉</p></div>
+        <div id="upNextDiv">
+          <h3>-NEXT-</h3>
+          <p id="upNext"> Comming up next!</p>
+        </div>
+        <div id="infoDiv">
+          <h3>-SCORE-</h3>
+          <p id="scoreBoard">0</p>
+          <h3>-INSTRUCTION-</h3>
+          <p class="instruction">Q, E, W, X : rotate view <br>
+             Z, C : zoom int / out <br>
+             F : focus drop zone <br>
+             🍒➡🍓➡🍇➡🍊➡🍅➡<br>
+            🍎➡🍐➡🍑➡🍍➡🍈➡🍉</p>
+        </div>
       </div>
 
     </div>
 
     <div id="info">
+      Made by rahon6000 (Taekhyeon Lee) 구직중 🔥 입니다. <br>
+      <a href="https://github.com/rahon6000"><i class="fab fa-fw fa-github"></i>Github</a> <br>
       Powered by 
       <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a>
     </div>

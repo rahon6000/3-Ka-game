@@ -7,9 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { camera, scene, renderer, 
+import { camera, renderer, 
 // createSph,
-createColorSph, guideLine, fps } from './script.js';
+createColorSph, guideLine, guideSphere, renewGuideSphere, fps, config } from './script.js';
 import { sphs, side, height, dropMargin } from './physics.js';
 import { MathUtils, Vector3 } from 'three';
 let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0;
@@ -22,12 +22,15 @@ let windowHalfY = container.clientHeight / 2 + container.offsetTop;
 let containerWidth = container.clientWidth / 2;
 let containerHeight = container.clientHeight / 2;
 let upNextPanel = document.getElementById('upNext');
-let instructionPanel = document.getElementById('instruction');
+let scoreBoard = document.getElementById('scoreBoard');
 export let currentPhi = 0.25 * Math.PI + 0.001, targetPhi = 0.25 * Math.PI + 0.001;
 export let currentTheta = 0.25 * Math.PI, targetTheta = 0.25 * Math.PI;
 export let currentRadi = 900 * 1.5, targetRadi = 900 * 1.5;
 let transitionTime = 500;
 let noKeyInput = false;
+export let currentRank = MathUtils.randInt(0, 5);
+let nextRank = MathUtils.randInt(0, 5);
+let gameScore = 0;
 export function onWindowResize() {
     windowHalfX = container.clientWidth / 2 + container.offsetLeft;
     windowHalfY = container.clientHeight / 2 + container.offsetTop;
@@ -41,20 +44,25 @@ export function onWindowResize() {
 let vec = new Vector3(); // recycle. normalized mouse position in camera view.
 let pos = new Vector3(); // recycle. world position under the mouse.
 export function onDocumentMouseMove(event) {
-    mouseX = (event.clientX - windowHalfX);
-    mouseY = -(event.clientY - windowHalfY);
+    mouseX = (event.clientX - windowHalfX + window.scrollX);
+    mouseY = -(event.clientY - windowHalfY + window.scrollY);
     vec.set(mouseX / containerWidth, mouseY / containerHeight, 1);
     vec.unproject(camera);
     vec.sub(camera.position).normalize();
-    pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height - camera.position.z) / vec.z));
+    pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
     if (isInRange(pos, side)) {
         //@ts-ignore
         guideLine.material.opacity = 0.5;
         guideLine.position.set(pos.x, pos.y, 0);
+        guideSphere.position.set(pos.x, pos.y, 0.5 * height + dropMargin);
+        //@ts-ignore
+        guideSphere.material.opacity = 0.5;
     }
     else {
         //@ts-ignore
         guideLine.material.opacity = 0;
+        //@ts-ignore
+        guideSphere.material.opacity = 0;
     }
 }
 export function onDocumentClick(event) {
@@ -63,6 +71,10 @@ export function onDocumentClick(event) {
     clickX = pos.x + (Math.random() - 0.5);
     clickY = pos.y + (Math.random() - 0.5);
     let margin = 5;
+    if (Math.abs(clickX) > (side + 50))
+        return;
+    if (Math.abs(clickY) > (side + 50))
+        return;
     if (clickX <= -side)
         clickX = -side + margin;
     else if (clickX >= side)
@@ -74,8 +86,11 @@ export function onDocumentClick(event) {
     // let newMesh = createSph(randomRadius(), 'test', 
     //   [clickX, clickY, 0.5 * height + dropMargin], 
     //   [Math.random()*2*Math.PI, Math.random()*2*Math.PI, 0]); // This might not be random.
-    let newMesh = createColorSph(MathUtils.randInt(0, 5), [clickX, clickY, 0.5 * height + dropMargin], [Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI, 0]); // This might not be random.
-    scene.add(newMesh);
+    let newMesh = createColorSph(currentRank, [clickX, clickY, 0.5 * height + dropMargin], [Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI, 0]); // This might not be random.
+    currentRank = nextRank;
+    nextRank = MathUtils.randInt(0, 5);
+    // // renew guide sphere.
+    renewGuideSphere();
 }
 export function onKeydown(event) {
     let inputKey = event.key;
@@ -101,6 +116,8 @@ export function onKeydown(event) {
             break;
         case 'X':
             targetTheta = currentTheta + 0.1 * Math.PI;
+            break;
+        case 'F':
             break;
         default:
             break;
@@ -134,18 +151,15 @@ export function smoothCameraSet(Phi, Theta, Radi) {
         }, 20);
     });
 }
-// function randomRadius(): number { // radius should be less than entry margin...
-//   let rnd = Math.random();
-//   if (rnd < 0.3) {
-//     return 15;
-//   } else if (rnd < 0.5) {
-//     return 20;
-//   } else if (rnd < 0.7) {
-//     return 25;
-//   } else {
-//     return 30;
-//   }
-// }
+export function addGameScore(num) {
+    gameScore += num;
+}
+export function display() {
+    upNextPanel.innerText = "●"; //nextRank.toString();
+    upNextPanel.style.color = "#" + config[nextRank].color.getHexString();
+    upNextPanel.style.fontSize = config[nextRank].radius.toString() + "px";
+    scoreBoard.innerText = gameScore.toString();
+}
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
 // 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 

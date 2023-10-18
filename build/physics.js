@@ -1,11 +1,12 @@
 import * as THREE from "three";
 import { rankUpSph } from "./script.js";
+import { addGameScore } from "./UI.js";
 let gravity = 0.098; // At what framerate? 120?
 export let G = new THREE.Vector3(0, 0, -gravity);
 export let sphs = []; // managing all fruits
 export let side = 100;
 export let height = 300;
-export let dropMargin = 30;
+export let dropMargin = 30.5;
 let halfHeight = height * 0.5;
 // Physical properties...
 let floorElasticity = 0.5;
@@ -201,6 +202,7 @@ export class Physical {
         sph.vel.multiplyScalar(0);
         sph.isReservedToDestroyed = true;
         sph.isCollide = true;
+        addGameScore(this.rank ** 2);
     }
 }
 ;
