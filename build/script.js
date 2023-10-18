@@ -1,3 +1,12 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import * as THREE from 'three';
 import * as PHYS from './physics.js';
 import * as UI from './UI.js';
@@ -94,8 +103,10 @@ export let config = [
         name: "suika"
     }
 ];
-init();
-animate();
+loadConfig("default").then(() => {
+    init();
+    animate();
+});
 function init() {
     var _a;
     container = UI.container;
@@ -156,16 +167,16 @@ export function createColorSph(rank, position, rotation) {
     // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
     let radius = config[rank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
-    // let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
+    let textureName = "strawberry";
+    let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
     let material = new THREE.MeshBasicMaterial({
         opacity: 1,
         transparent: true,
-        color: config[rank].color
+        // color: config[rank].color,
+        map: texture,
     });
     // Create mesh from Geometry & Material. ADD TO THE SCENE!
     let mesh = new THREE.Mesh(myGeo, material);
-    let textured = new THREE.Mesh(myGeo, material);
-    mesh.add(textured);
     let acceptRange = PHYS.side - radius * 0.51;
     if (position[0] < -acceptRange)
         position[0] = -acceptRange;
@@ -286,5 +297,17 @@ function render() {
     UI.display();
     UI.debugging(debTab);
     renderer.render(scene, camera); // OF COURSE we use prepared renderer.
+}
+function loadConfig(mode) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // let fet = await fetch("app_config.json");
+        // let waiter = fet.json().then(
+        //   (body) => {
+        //     config = body.DEFAULT;
+        //     return 0;
+        //   }
+        // );
+        // return waiter;
+    });
 }
 //# sourceMappingURL=script.js.map

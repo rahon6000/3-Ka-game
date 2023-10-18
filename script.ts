@@ -99,8 +99,12 @@ export let config = [
   }
 ];
 
-init();
-animate();
+loadConfig("default").then(
+  () => {
+    init();
+    animate();
+  }
+);
 
 function init() {
 
@@ -179,16 +183,17 @@ export function createColorSph(rank: number, position: number[], rotation: numbe
   let radius = config[rank].radius;
   let myGeo = new THREE.SphereGeometry(radius, 32, 16);
 
-  // let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
+  let textureName = "strawberry";
+  let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
   let material = new THREE.MeshBasicMaterial({
     opacity: 1,
     transparent: true,
-    color: config[rank].color });
+    // color: config[rank].color,
+    map: texture,
+  });
 
   // Create mesh from Geometry & Material. ADD TO THE SCENE!
   let mesh = new THREE.Mesh(myGeo, material);
-  let textured = new THREE.Mesh(myGeo, material);
-  mesh.add(textured);
   let acceptRange = PHYS.side - radius * 0.51;
   if (position[0] < -acceptRange) position[0] = -acceptRange;
   else if (position[0] > acceptRange) position[0] = acceptRange;
@@ -321,3 +326,14 @@ function render() {
 
   renderer.render(scene, camera); // OF COURSE we use prepared renderer.
 }
+async function loadConfig(mode: string) {
+  // let fet = await fetch("app_config.json");
+  // let waiter = fet.json().then(
+  //   (body) => {
+  //     config = body.DEFAULT;
+  //     return 0;
+  //   }
+  // );
+  // return waiter;
+}
+
