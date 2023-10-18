@@ -11,7 +11,7 @@ import {
   config
 } from './script.js';
 import { sphs, side, height, dropMargin} from './physics.js';
-import { MathUtils, Vector3 } from 'three';
+import { MathUtils, Vector3, Color } from 'three';
 
 let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0;
 export let container = document.getElementById('container') as HTMLElement;
@@ -170,7 +170,7 @@ export function addGameScore( num : number){
 
 export function display(){
   upNextPanel.innerText = "●"//nextRank.toString();
-  upNextPanel.style.color = "#" + config[nextRank].color.getHexString();
+  upNextPanel.style.color = "#" + new Color(config[nextRank].color).getHexString();
   upNextPanel.style.fontSize = config[nextRank].radius.toString()+"px";
   scoreBoard.innerText = gameScore.toString();
 }

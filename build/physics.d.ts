@@ -12,6 +12,7 @@ export declare class Physical {
     radius: number;
     isCollide: boolean;
     isReservedToDestroyed: boolean;
+    isEverCollide: boolean;
     constructor(mesh: THREE.Mesh, vel: number[], rank: number, radius: number);
     getPosFromMesh(): number[];
     getVelFromMesh(): number[];
@@ -20,5 +21,6 @@ export declare class Physical {
     checkWallCollision(): void;
     checkCollisionWith(x: Physical): void;
     sphereFusion(sph: Physical): void;
+    checkGameOver(): void;
 }
 export declare function physics(elements: Physical[]): void;

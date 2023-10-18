@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { rankUpSph } from "./script.js";
+import { gameOver, rankUpSph } from "./script.js";
 import { addGameScore } from "./UI.js";
 let gravity = 0.098; // At what framerate? 120?
 export let G = new THREE.Vector3(0, 0, -gravity);
@@ -30,6 +30,7 @@ export class Physical {
   radius: number;
   isCollide: boolean;
   isReservedToDestroyed: boolean;
+  isEverCollide: boolean;
   constructor(mesh: THREE.Mesh, vel: number[], rank: number, radius: number) {
     this.mesh = mesh;
     this.vel = new THREE.Vector3(vel[0], vel[1], vel[2]);
@@ -38,6 +39,7 @@ export class Physical {
     this.isCollide = false;
     this.mass = 1;
     this.isReservedToDestroyed = false;
+    this.isEverCollide = false;
   }
 
   getPosFromMesh() {
@@ -69,6 +71,7 @@ export class Physical {
     if (overwrap > 0) {
       // simple solution, no fast moving friends
       this.isCollide = true;
+      this.isEverCollide = true;
       this.mesh.position.x += this.vel.x;
       this.mesh.position.y += this.vel.y;
       this.vel.x *= 0.99; this.vel.y *= 0.99; //friction
@@ -180,6 +183,8 @@ export class Physical {
         this.sphereFusion(x);
         return;
       }
+      this.isCollide = true;
+      this.isEverCollide = true;
       // MATH...!!! 😢
       // Use below variables... It seems complicated.
       let lineV = objA.sub(objB).normalize();
@@ -221,7 +226,14 @@ export class Physical {
     sph.vel.multiplyScalar(0);
     sph.isReservedToDestroyed = true;
     sph.isCollide = true;
+    this.isEverCollide = true;
     addGameScore(this.rank **2);
+  }
+
+  checkGameOver() {
+    if(this.isEverCollide && this.mesh.position.z > height + dropMargin) {
+      gameOver();
+    }
   }
 };
 
@@ -241,8 +253,13 @@ export function physics(elements: Physical[]) {
     elements[i].nextPosition(); // and also accelerate.
   }
 
-  // Remove sphes
+  // Remove sphes & game over check
   for (let i = 0; i < elements.length; i++) {
+    try{
+      elements[i].checkGameOver();
+    } catch (e){
+      break;
+    }
     if (elements[i].isReservedToDestroyed) {
       elements = elements.splice(i, 1);
     }

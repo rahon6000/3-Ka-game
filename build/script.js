@@ -167,7 +167,7 @@ export function createColorSph(rank, position, rotation) {
     // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
     let radius = config[rank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
-    let textureName = "strawberry";
+    let textureName = config[rank].texture;
     let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
     let material = new THREE.MeshBasicMaterial({
         opacity: 1,
@@ -196,7 +196,12 @@ export function rankUpSph(sph) {
     let newRank = sph.rank + 1;
     let radius = config[newRank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
-    let material = new THREE.MeshBasicMaterial({ color: config[newRank].color });
+    let textureName = config[newRank].texture;
+    let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
+    let material = new THREE.MeshBasicMaterial({
+        // color: config[newRank].color,
+        map: texture,
+    });
     sph.mesh.geometry = myGeo;
     sph.mesh.material = material;
     sph.radius = radius;
@@ -254,11 +259,14 @@ function createGuideSph() {
     let radius = config[UI.currentRank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
     // let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
+    let textureName = config[UI.currentRank].texture;
+    let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
     let material = new THREE.MeshBasicMaterial({
         opacity: 0,
         transparent: true,
         depthWrite: false,
-        color: config[UI.currentRank].color
+        // color: config[UI.currentRank].color,
+        map: texture
     });
     // Create mesh from Geometry & Material. ADD TO THE SCENE!
     // let mesh = new THREE.Mesh(myGeo, material); // this caused error.
@@ -273,11 +281,14 @@ export function renewGuideSphere() {
     guideSphere.clear();
     let radius = config[UI.currentRank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16); // new geo
+    let textureName = config[UI.currentRank].texture;
+    let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
     let material = new THREE.MeshBasicMaterial({
         opacity: 0.5,
         transparent: true,
         depthWrite: false,
-        color: config[UI.currentRank].color
+        // color: config[UI.currentRank].color,
+        map: texture
     });
     guideSphere.geometry = myGeo;
     guideSphere.material = material;
@@ -298,16 +309,18 @@ function render() {
     UI.debugging(debTab);
     renderer.render(scene, camera); // OF COURSE we use prepared renderer.
 }
+export function gameOver() {
+    PHYS.sphs.splice(0, PHYS.sphs.length);
+    alert("game over.");
+}
 function loadConfig(mode) {
     return __awaiter(this, void 0, void 0, function* () {
-        // let fet = await fetch("app_config.json");
-        // let waiter = fet.json().then(
-        //   (body) => {
-        //     config = body.DEFAULT;
-        //     return 0;
-        //   }
-        // );
-        // return waiter;
+        let fet = yield fetch("app_config.json");
+        let waiter = fet.json().then((body) => {
+            config = body.DEFAULT;
+            return 0;
+        });
+        return waiter;
     });
 }
 //# sourceMappingURL=script.js.map

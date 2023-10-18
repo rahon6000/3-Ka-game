@@ -16,3 +16,4 @@ export declare let config: {
 export declare function createColorSph(rank: number, position: number[], rotation: number[]): void;
 export declare function rankUpSph(sph: PHYS.Physical): void;
 export declare function renewGuideSphere(): void;
+export declare function gameOver(): void;

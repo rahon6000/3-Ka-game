@@ -3,77 +3,77 @@
     {
       "radius": 10,
       "mass": 1,
-      "texture": "test",
+      "texture": "cherry",
       "color": "crimson",
       "name": "cherry"
     },
     {
       "radius": 15,
       "mass": 1,
-      "texture": "test",
+      "texture": "strawberry",
       "color": "salmon",
       "name": "strawberry"
     },
     { 
       "radius": 20,
       "mass": 1,
-      "texture": "test",
+      "texture": "grape",
       "color": "slateblue",
       "name": "grape"
     },
     { 
       "radius": 25,
       "mass": 1,
-      "texture": "test",
+      "texture": "orange",
       "color": "orange",
       "name": "mandarin"
     },
     { 
       "radius": 30,
       "mass": 1,
-      "texture": "test",
+      "texture": "persimmon",
       "color": "orangered",
       "name": "persimmon"
     },
     { 
       "radius": 35,
       "mass": 1,
-      "texture": "test",
+      "texture": "apple",
       "color": "red",
       "name": "apple"
     },
     {
       "radius": 40,
       "mass": 1,
-      "texture": "test",
+      "texture": "pear",
       "color": "palegoldenrod",
       "name": "pear"
     },
     { 
       "radius": 45,
       "mass": 1,
-      "texture": "test",
+      "texture": "peach",
       "color": "pink",
       "name": "peach"
     },
     {
       "radius": 50,
       "mass": 1,
-      "texture": "test",
+      "texture": "ananas",
       "color": "yellow",
       "name": "ananas or pineapple"
     },
     {
       "radius": 55,
       "mass": 1,
-      "texture": "test",
+      "texture": "melon",
       "color": "chartreuse",
       "name": "melon"
     },
     { 
       "radius": 60,
       "mass": 1,
-      "texture": "test",
+      "texture": "suika",
       "color": "darkgreen",
       "name": "suika"
     }
