@@ -3,6 +3,12 @@
   font-family: sans-serif;
   user-select: none;
 }
+html, body {
+  overflow: hidden;
+}
+body {
+  position: relative;
+}
 a:link {
   color: black;
   text-decoration: underline;
@@ -100,6 +106,7 @@ td {
   min-height: 0;
 }
 #debugContainer {
+  display: none;
   margin:auto;
   text-align: center;
 }

@@ -18,11 +18,11 @@ let halfHeight = height * 0.5;
 let floorElasticity = 0.5;
 let sideWallElasticity = 0.7;
 let interSphereElasticity = 0.5;
-let sphereFriction = 0.7;
+let sphereFriction = 0.6;
 let stillness = 4 * gravity;
 let wallOverwrapCoeff = 0.1;
-let overwrapRepulsion = 0.7; // = sphere repulsion
-let wallSpinFriction = 2;
+let overwrapRepulsion = 0.6; // = sphere repulsion
+let wallSpinFriction = 1.5;
 
 let tmp = new THREE.Vector3();
 // should consider frame

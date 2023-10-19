@@ -137,6 +137,69 @@ export function onKeydown(event: KeyboardEvent) {
   smoothCameraSet(targetPhi, targetTheta, targetRadi);
 }
 
+
+let Xstart = 0;
+let Ystart = 0;
+export function onDocumentTouchStart(this: Document, ev: TouchEvent) {
+  Xstart = (ev.touches[0].clientX - windowHalfX + window.scrollX);
+  Ystart = -(ev.touches[0].clientY - windowHalfY + window.scrollY);
+
+}
+
+export function onDocumentTouched(this: Document, ev: TouchEvent) {
+  let clientX = (ev.changedTouches[0].clientX - windowHalfX + window.scrollX);
+  let clientY = -(ev.changedTouches[0].clientY - windowHalfY + window.scrollY);
+  vec.set(clientX / containerWidth, clientY / containerHeight, 1);
+  vec.unproject(camera);
+  vec.sub(camera.position).normalize();
+  pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
+  onDocumentClick( new MouseEvent("dummy") );
+  //@ts-ignore
+  guideLine.material.opacity = 0;
+  //@ts-ignore
+  guideSphere.material.opacity = 0;
+}
+
+export function onDocumentSwipe(this: Document, ev: TouchEvent) {
+  
+  // define pos for mobile
+  mouseX = (ev.changedTouches[0].clientX - windowHalfX + window.scrollX);
+  mouseY = -(ev.changedTouches[0].clientY - windowHalfY + window.scrollY);
+  vec.set(mouseX / containerWidth, mouseY / containerHeight, 1);
+  vec.unproject(camera);
+  vec.sub(camera.position).normalize();
+  pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
+
+  if (isInRange(pos, side)) {
+    //@ts-ignore
+    guideLine.material.opacity = 0.5;
+    guideLine.position.set(pos.x, pos.y, 0);
+    guideSphere.position.set(pos.x, pos.y, 0.5 * height +dropMargin);
+    //@ts-ignore
+    guideSphere.material.opacity = 0.5;
+  } else {
+    //@ts-ignore
+    guideLine.material.opacity = 0;
+    //@ts-ignore
+    guideSphere.material.opacity = 0;
+  } 
+  if (noKeyInput) return;
+  if (Math.abs(pos.x) > (side + 50) && Math.abs(pos.x) > (side + 50)) {
+    // outside the entry
+    if( Math.abs(mouseX - Xstart) > w_width * 0.3) {
+      // rotation for mobile
+      if(mouseX - Xstart < 0) {
+        targetPhi = currentPhi + 0.25 * Math.PI;
+      } else {
+        targetPhi = currentPhi - 0.25 * Math.PI;
+      }
+      noKeyInput = true;
+      setTimeout(() => { noKeyInput = false; }, transitionTime);
+      smoothCameraSet(targetPhi, targetTheta, targetRadi);
+    }
+  }
+}
+
 function setCameraStatus(Phi: number, Theta: number, Radi: number) { // 더 간단하게 짤 수 있을텐데
   let xyProjection = Radi * Math.sin(Theta);
   let zAxis = new Vector3(0, 0, 1);
@@ -252,4 +315,3 @@ export function onCamDebugChanged(event: Event) {
 function isInRange(pos: Vector3, side: number):boolean {
   return (pos.x < side) && (pos.x > -side) && (pos.y < side) && (pos.y > -side);
 }
-

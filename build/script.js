@@ -132,10 +132,19 @@ function init() {
     renderer.setSize(300, 500);
     UI.onWindowResize();
     container.appendChild(renderer.domElement);
-    document.addEventListener('mousemove', UI.onDocumentMouseMove);
-    document.addEventListener('click', UI.onDocumentClick);
+    console.log(window.navigator.userAgent);
+    let isMobile = detectMobileDevice(window.navigator.userAgent);
+    if (isMobile) {
+        document.addEventListener('touchstart', UI.onDocumentTouchStart);
+        document.addEventListener('touchmove', UI.onDocumentSwipe);
+        document.addEventListener('touchend', UI.onDocumentTouched);
+    }
+    else {
+        document.addEventListener('mousemove', UI.onDocumentMouseMove);
+        document.addEventListener('click', UI.onDocumentClick);
+        window.addEventListener('keydown', UI.onKeydown);
+    }
     window.addEventListener('resize', UI.onWindowResize);
-    window.addEventListener('keydown', UI.onKeydown);
     // Debug UI
     (_a = document.getElementById("camPos")) === null || _a === void 0 ? void 0 : _a.addEventListener('input', UI.onCamDebugChanged);
 }
@@ -327,5 +336,16 @@ function loadConfig(mode) {
         }, (reject) => console.log(reject.message));
         return waiter;
     });
+}
+function detectMobileDevice(agent) {
+    let mobileRegex = [
+        /Android/i,
+        /iPhone/i,
+        /iPad/i,
+        /iPod/i,
+        /BlackBerry/i,
+        /Window Phone/i
+    ];
+    return mobileRegex.some(reg => agent.match(reg));
 }
 //# sourceMappingURL=script.js.map
