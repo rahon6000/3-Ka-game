@@ -10,7 +10,7 @@ import {
   fps,
   config
 } from './script.js';
-import { sphs, side, height, dropMargin} from './physics.js';
+import { sphs, side, height, dropMargin, setPhysicalParameters} from './physics.js';
 import { MathUtils, Vector3, Color } from 'three';
 
 let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0;
@@ -169,9 +169,9 @@ export function addGameScore( num : number){
 }
 
 export function display(){
-  upNextPanel.innerText = "●"//nextRank.toString();
+  upNextPanel.innerText = config[nextRank].name;//nextRank.toString();
   upNextPanel.style.color = "#" + new Color(config[nextRank].color).getHexString();
-  upNextPanel.style.fontSize = config[nextRank].radius.toString()+"px";
+  // upNextPanel.style.fontSize = config[nextRank].radius.toString()+"px";
   scoreBoard.innerText = gameScore.toString();
 }
 
@@ -215,6 +215,26 @@ export function debugging(debTab: HTMLCollectionOf<Element>) {
     }
     // @ts-ignore
     debTab.namedItem("spheres")?.innerHTML = sphereDisplay;
+
+    
+    // @ts-ignore
+    setPhysicalParameters(
+      // @ts-ignore
+      Number(debTab.namedItem("floorE").value),
+      // @ts-ignore
+      Number(debTab.namedItem("wallE").value),
+      // @ts-ignore
+      Number(debTab.namedItem("spheE").value),
+      // @ts-ignore
+      Number(debTab.namedItem("spheF").value),
+      // @ts-ignore
+      Number(debTab.namedItem("still").value),
+      // @ts-ignore
+      Number(debTab.namedItem("wallRep").value),
+      // @ts-ignore
+      Number(debTab.namedItem("spheRep").value)
+    ); // 옘병~
+    console.log();
   } catch (error) {
     console.log(error);
   }

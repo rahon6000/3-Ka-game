@@ -1,7 +1,10 @@
 import * as THREE from "three";
-import { gameOver, rankUpSph } from "./script.js";
+import { gameOver, rankUpSph, scene } from "./script.js";
 import { addGameScore } from "./UI.js";
 let gravity = 0.098; // At what framerate? 120?
+const zAxis = new THREE.Vector3(0,0,1);
+const yAxis = new THREE.Vector3(0,1,0);
+const xAxis = new THREE.Vector3(1,0,0);
 export let G = new THREE.Vector3(0, 0, -gravity);
 
 export let sphs: Physical[] = []; // managing all fruits
@@ -13,12 +16,13 @@ let halfHeight = height * 0.5;
 
 // Physical properties...
 let floorElasticity = 0.5;
-let sideWallElasticity = 0;
+let sideWallElasticity = 0.7;
 let interSphereElasticity = 0.5;
 let sphereFriction = 0.7;
 let stillness = 4 * gravity;
 let wallOverwrapCoeff = 0.1;
-let overwrapRepulsion = 0.5;
+let overwrapRepulsion = 0.7; // = sphere repulsion
+let wallSpinFriction = 2;
 
 let tmp = new THREE.Vector3();
 // should consider frame
@@ -26,6 +30,7 @@ export class Physical {
   mass: number;
   mesh: THREE.Mesh;
   vel: THREE.Vector3;
+  spin: THREE.Vector3;
   rank: number;
   radius: number;
   isCollide: boolean;
@@ -34,6 +39,7 @@ export class Physical {
   constructor(mesh: THREE.Mesh, vel: number[], rank: number, radius: number) {
     this.mesh = mesh;
     this.vel = new THREE.Vector3(vel[0], vel[1], vel[2]);
+    this.spin = new THREE.Vector3(0.0 ,0.0 ,0.0);
     this.rank = rank;
     this.radius = radius;
     this.isCollide = false;
@@ -57,6 +63,8 @@ export class Physical {
     } else {
       this.mesh.position.add(this.vel);
       this.accelerate(G);
+      tmp = this.spin.clone();
+      this.mesh.rotateOnWorldAxis(tmp.normalize(), this.spin.length());
     }
 
   }
@@ -74,7 +82,15 @@ export class Physical {
       this.isEverCollide = true;
       this.mesh.position.x += this.vel.x;
       this.mesh.position.y += this.vel.y;
+
       this.vel.x *= 0.99; this.vel.y *= 0.99; //friction
+      this.spin.z *= 0.99; // spin loss from friction
+
+      this.spin.x = -this.vel.y / this.radius;
+      this.spin.y = this.vel.x / this.radius; // spin affected by vel
+      this.vel.x = this.spin.y * this.radius; 
+      this.vel.y = -this.spin.x * this.radius; // vel affected by spin
+
       if (this.vel.length() < stillness) {
         this.vel.z = 0;
         this.mesh.position.z = this.radius - halfHeight;
@@ -85,6 +101,7 @@ export class Physical {
       }
     }
 
+    
     // side wall edge
     let edgeDist = new THREE.Vector3();
     let edgeCollisionVector = new THREE.Vector3();
@@ -94,34 +111,40 @@ export class Physical {
         this.isCollide = true;
         edgeCollisionVector = this.vel.projectOnVector(edgeDist.normalize());
         this.vel.add(edgeCollisionVector.negate());
+        this.spin.add(yAxis).multiplyScalar(-1.0 / this.radius); // spin
       }
       edgeDist.set(this.mesh.position.x + this.vel.x + side, 0, this.mesh.position.z + this.vel.z - halfHeight);
       if (edgeDist.length() < this.radius) {
         this.isCollide = true;
         edgeCollisionVector = this.vel.projectOnVector(edgeDist.normalize());
         this.vel.add(edgeCollisionVector.negate());
+        this.spin.add(yAxis).multiplyScalar(1.0 / this.radius); // spin
       }
       edgeDist.set(0, this.mesh.position.y + this.vel.y - side, this.mesh.position.z + this.vel.z - halfHeight);
       if (edgeDist.length() < this.radius) {
         this.isCollide = true;
         edgeCollisionVector = this.vel.projectOnVector(edgeDist.normalize());
         this.vel.add(edgeCollisionVector.negate());
+        this.spin.add(xAxis).multiplyScalar(1.0 / this.radius); // spin
       }
       edgeDist.set(0, this.mesh.position.y + this.vel.y + side, this.mesh.position.z + this.vel.z - halfHeight);
       if (edgeDist.length() < this.radius) {
         this.isCollide = true;
         edgeCollisionVector = this.vel.projectOnVector(edgeDist.normalize());
         this.vel.add(edgeCollisionVector.negate());
+        this.spin.add(xAxis).multiplyScalar(-1.0 / this.radius); // spin
       }
     } else {
+
       // side walls
       let nextXpos = this.mesh.position.x + this.vel.x;
       overwrap = nextXpos + this.radius - side;
-      if (overwrap > 0) { // apply if above works
+      if (overwrap > 0) {
         this.isCollide = true;
         this.vel.x = -Math.abs(this.vel.x) * sideWallElasticity;
         this.mesh.position.x += this.vel.x;
-        //
+        // spin
+        this.vel.z += this.spin.y / this.radius * wallSpinFriction;
         overwrap = this.mesh.position.x + this.radius - side;
         while (overwrap > 0) {
           this.vel.x += -overwrap * wallOverwrapCoeff;
@@ -134,7 +157,8 @@ export class Physical {
         this.isCollide = true;
         this.vel.x = Math.abs(this.vel.x) * sideWallElasticity;
         this.mesh.position.x += this.vel.x;
-        //
+        // spin
+        this.vel.z -= this.spin.y / this.radius * wallSpinFriction;
         overwrap = -this.mesh.position.x + this.radius - side;
         while (overwrap > 0) {
           this.vel.x += overwrap * wallOverwrapCoeff;
@@ -144,11 +168,12 @@ export class Physical {
       }
       let nextYpos = this.mesh.position.y + this.vel.y;
       overwrap = nextYpos + this.radius - side;
-      if (overwrap > 0) { // apply if above works
+      if (overwrap > 0) {
         this.isCollide = true;
         this.vel.y = -Math.abs(this.vel.y) * sideWallElasticity;
         this.mesh.position.y += this.vel.y;
-        //
+        // spin
+        this.vel.z += this.spin.x / this.radius * wallSpinFriction;
         overwrap = this.mesh.position.y + this.radius - side;
         while (overwrap > 0) {
           this.vel.y += -overwrap * wallOverwrapCoeff;
@@ -161,7 +186,8 @@ export class Physical {
         this.isCollide = true;
         this.vel.y = Math.abs(this.vel.y) * sideWallElasticity;
         this.mesh.position.y += this.vel.y;
-        //
+        // spin
+        this.vel.z -= this.spin.x / this.radius * wallSpinFriction;
         overwrap = -this.mesh.position.y + this.radius - side;
         while (overwrap > 0) {
           this.vel.y += overwrap * wallOverwrapCoeff;
@@ -178,7 +204,8 @@ export class Physical {
   checkCollisionWith(x: Physical) {
     let objA = this.mesh.position.clone();
     let objB = x.mesh.position.clone();
-    if (this.radius + x.radius > (objA.add(this.vel)).distanceTo(objB.add(x.vel))) {
+    if (this.radius + x.radius > (objA.add(this.vel)).distanceTo(objB.add(x.vel)) &&
+      !this.isReservedToDestroyed && !x.isReservedToDestroyed) {
       if (this.radius === x.radius) {
         this.sphereFusion(x);
         return;
@@ -192,6 +219,13 @@ export class Physical {
       let normalVelB = x.vel.clone().projectOnVector(lineV);
       this.vel.sub(normalVelA).multiplyScalar(sphereFriction);
       x.vel.sub(normalVelB).multiplyScalar(sphereFriction);
+      // spin part
+      this.spin.add(tmp.crossVectors(lineV, this.vel).multiplyScalar(1/this.radius));
+      x.spin.add(tmp.crossVectors(x.vel, lineV).multiplyScalar(1/x.radius));
+      this.spin.multiplyScalar(0.9);
+      x.spin.multiplyScalar(0.9);
+
+      // back to linear part
       let amplA = normalVelA.dot(lineV); // this don't use sqrt!
       let amplB = normalVelB.dot(lineV);
       let massSum = this.mass + x.mass;
@@ -200,7 +234,7 @@ export class Physical {
       normalVelB = lineV.clone().multiplyScalar(
         (amplA * (2 * this.mass) + amplB * (x.mass - this.mass)) / massSum);
       this.vel.add(normalVelA.multiplyScalar(interSphereElasticity));
-      this.vel.add(normalVelB.multiplyScalar(interSphereElasticity));
+      x.vel.add(normalVelB.multiplyScalar(interSphereElasticity));
       // this.vel.sub(normalVelA);
       // x.vel.sub(normalVelB);
       this.mesh.position.add(this.vel);
@@ -222,10 +256,11 @@ export class Physical {
     this.vel.multiplyScalar(0);
     this.isCollide = true;
     rankUpSph(this);
-    sph.mesh.position.set(0, 0, 10000);
     sph.vel.multiplyScalar(0);
+    scene.remove(sph.mesh);
     sph.isReservedToDestroyed = true;
     sph.isCollide = true;
+    sph.isEverCollide = false;
     this.isEverCollide = true;
     addGameScore(this.rank **2);
   }
@@ -236,6 +271,17 @@ export class Physical {
     }
   }
 };
+
+export function setPhysicalParameters(floorE: number, wallE: number, spheE: number,
+    spheF: number, still: number, wallRepulse: number, spheRepulse: number){
+  floorElasticity = floorE;
+  sideWallElasticity = wallE;
+  interSphereElasticity = spheE;
+  sphereFriction = spheF;
+  stillness = still * gravity;
+  wallOverwrapCoeff = wallRepulse;
+  overwrapRepulsion = spheRepulse;
+}
 
 export function physics(elements: Physical[]) {
   for (let i = 0; i < elements.length; i++) {

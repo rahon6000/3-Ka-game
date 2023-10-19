@@ -210,24 +210,24 @@ export function rankUpSph(sph) {
 function createBorder(side, height, scene) {
     let thickness = 10;
     let opacity = 0.2;
-    let myGeo = new THREE.BoxGeometry(2 * side, 2 * side, thickness, 1, 1, 1);
+    let myGeo = new THREE.BoxGeometry(2 * (side + thickness), 2 * (side + thickness), thickness, 1, 1, 1);
     let material = new THREE.MeshBasicMaterial({
         opacity: opacity,
         transparent: true,
-        color: new THREE.Color("teal")
+        color: new THREE.Color("teal"),
     });
     let mesh = new THREE.Mesh(myGeo, material);
     mesh.position.set(0, 0, (-0.5 * (thickness + height)));
     scene.add(mesh);
-    let distance = (side - thickness * 0.5);
+    let distance = (side + 0.5 * thickness);
     let sideArray = [[0, distance],
         [0, -distance],
         [distance, 0],
         [-distance, 0]];
-    let aspectArray = [[2 * (side), height],
-        [2 * (side), height],
-        [height, 2 * (side)],
-        [height, 2 * (side)]];
+    let aspectArray = [[2 * (side + thickness), height],
+        [2 * (side + thickness), height],
+        [height, 2 * (side + thickness)],
+        [height, 2 * (side + thickness)]];
     let rotaionArray = [new THREE.Vector3(1, 0, 0),
         new THREE.Vector3(1, 0, 0),
         new THREE.Vector3(0, 1, 0),
@@ -317,9 +317,14 @@ function loadConfig(mode) {
     return __awaiter(this, void 0, void 0, function* () {
         let fet = yield fetch("app_config.json");
         let waiter = fet.json().then((body) => {
-            config = body.DEFAULT;
+            if (mode === "DEFAULT") {
+                config = body.DEFAULT;
+            }
+            else {
+                config = body.DEFAULT;
+            }
             return 0;
-        });
+        }, (reject) => console.log(reject.message));
         return waiter;
     });
 }

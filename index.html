@@ -36,7 +36,7 @@
 
     <div id="info">
       Made by rahon6000 (Taekhyeon Lee) 구직중 🔥 입니다. <br>
-      <a href="https://github.com/rahon6000"><i class="fab fa-fw fa-github"></i>Github</a> <br>
+      <a href="https://github.com/rahon6000"><i class="fab fa-fw fa-github"></i>Github</a> | <a href="https://rahon6000.github.io/">blog</a> <br>
       Powered by 
       <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a>
     </div>
@@ -50,7 +50,7 @@
       }
     }
   </script> -->
-  <!-- Using node.js -->
+  
   <div id="debugContainer">
     <h1>--Debugger--</h1>
     <table>
@@ -63,10 +63,20 @@
         <td class="debTab"></td><td class="debTab"></td><td class="debTab"></td>
       </tr>
     </table>
+    <form>
+      FloorE<input class="debTab" type="range" max="1" min="0" step="0.05" value="0.5" name="floorE"><br>
+      WallE<input class="debTab" type="range" max="1" min="0" step="0.05" value="0.5" name="wallE"><br>
+      SpheE<input class="debTab" type="range" max="1" min="0" step="0.05" value="0.5" name="spheE"><br>
+      SpheF<input class="debTab" type="range" max="1" min="0" step="0.05" value="0.7" name="spheF"><br>
+      Still<input class="debTab" type="range" max="8" min="0" step="0.05" value="4.0" name="still"><br>
+      WallR<input class="debTab" type="range" max="1" min="0" step="0.05" value="0.1" name="wallRep"><br>
+      SpheR<input class="debTab" type="range" max="1" min="0" step="0.05" value="0.5" name="spheRep"><br>
+    </form>
     <table class="debTab" name="spheres">
     </table>
   </div>
 
+  <!-- Using node.js -->
   <script type="importmap">
     {
       "imports": {

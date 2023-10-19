@@ -8,6 +8,7 @@ export declare class Physical {
     mass: number;
     mesh: THREE.Mesh;
     vel: THREE.Vector3;
+    spin: THREE.Vector3;
     rank: number;
     radius: number;
     isCollide: boolean;
@@ -23,4 +24,5 @@ export declare class Physical {
     sphereFusion(sph: Physical): void;
     checkGameOver(): void;
 }
+export declare function setPhysicalParameters(floorE: number, wallE: number, spheE: number, spheF: number, still: number, wallRepulse: number, spheRepulse: number): void;
 export declare function physics(elements: Physical[]): void;

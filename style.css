@@ -5,7 +5,7 @@
 }
 a:link {
   color: black;
-  text-decoration: none;
+  text-decoration: underline;
 }
 a:visited {
   color: black;
@@ -76,15 +76,21 @@ td {
 #upNextDiv {
   flex: 30%;
 }
+#upNext {
+  font-size: large;
+  font-size: 5vw;
+  margin: auto;
+}
 #infoDiv > * {
   overflow-y: auto;
   margin: auto;
 }
 .instruction {
-  font-size: 1.5vh;
+  font-size: 100%;
 }
 #scoreBoard {
-  font-size: large;
+  font-size: 200%;
+  font-weight: bold;
 }
 #info {
   flex: 5%;
@@ -93,7 +99,7 @@ td {
   min-width: 0;
   min-height: 0;
 }
-#debugContiner {
+#debugContainer {
   margin:auto;
   text-align: center;
 }
