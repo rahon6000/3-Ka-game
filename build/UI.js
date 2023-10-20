@@ -9,40 +9,47 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { camera, renderer, 
 // createSph,
-createColorSph, guideLine, guideSphere, renewGuideSphere, fps, config } from './script.js';
+createColorSph, guideLine, guideSphere, renewGuideSphere, fps, config, } from './script.js';
 import { sphs, side, height, dropMargin, setPhysicalParameters } from './physics.js';
 import { MathUtils, Vector3, Color } from 'three';
-let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0;
-export let container = document.getElementById('container');
+let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0; // Client mouse positions
+export let container = document.getElementById('container'); // container DOM
 export let w_width = container.clientWidth;
 export let w_height = container.clientHeight;
-export let w_ratio = w_height / w_width; // Not sure this is right......
+export let w_ratio = w_height / w_width;
 let windowHalfX = container.clientWidth / 2 + container.offsetLeft;
 let windowHalfY = container.clientHeight / 2 + container.offsetTop;
 let containerWidth = container.clientWidth / 2;
 let containerHeight = container.clientHeight / 2;
-let upNextPanel = document.getElementById('upNext');
+let upNextPanel = document.getElementById('upNext'); // Other UI panels DOM
 let scoreBoard = document.getElementById('scoreBoard');
+// Camera orientations and movement
 export let currentPhi = 0.25 * Math.PI + 0.001, targetPhi = 0.25 * Math.PI + 0.001;
 export let currentTheta = 0.25 * Math.PI, targetTheta = 0.25 * Math.PI;
 export let currentRadi = 900 * 1.5, targetRadi = 900 * 1.5;
 let transitionTime = 500;
 let noKeyInput = false;
+// Fruit rank (is it OK to be here...?) and game score.
 export let currentRank = MathUtils.randInt(0, 5);
 let nextRank = MathUtils.randInt(0, 5);
 let gameScore = 0;
+// Vectors used to map from client -> 3D world.
+let vec = new Vector3(); // recycle. normalized mouse position in camera view.
+let pos = new Vector3(); // recycle. world position under the mouse.
+// numbers for Mobile UIs
+let touchXstart = 0;
+let touchYstart = 0;
 export function onWindowResize() {
     windowHalfX = container.clientWidth / 2 + container.offsetLeft;
     windowHalfY = container.clientHeight / 2 + container.offsetTop;
     containerWidth = container.clientWidth / 2;
     containerHeight = container.clientHeight / 2;
-    // // 창 크기 변환시 camera 를 업데이트 한다.
+    // // Update cam
     camera.aspect = containerWidth / containerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(container.clientWidth, container.clientHeight);
 }
-let vec = new Vector3(); // recycle. normalized mouse position in camera view.
-let pos = new Vector3(); // recycle. world position under the mouse.
+// PC mouse UIs
 export function onDocumentMouseMove(event) {
     mouseX = (event.clientX - windowHalfX + window.scrollX);
     mouseY = -(event.clientY - windowHalfY + window.scrollY);
@@ -75,8 +82,11 @@ export function onDocumentMouseMove(event) {
     }
 }
 export function onDocumentClick(event) {
-    if (sphs.length > 0 && sphs[sphs.length - 1].mesh.position.z > (0.5 * height))
+    if (sphs.length > 0 &&
+        sphs[sphs.length - 1].mesh.position.z > (0.5 * height) - (sphs[sphs.length - 1].radius + config[currentRank].radius) &&
+        !sphs[sphs.length - 1].isEverCollide) {
         return;
+    }
     clickX = pos.x + (Math.random() - 0.5);
     clickY = pos.y + (Math.random() - 0.5);
     if (Math.abs(clickX) > (side + 50))
@@ -129,14 +139,17 @@ export function onKeydown(event) {
             break;
     }
     noKeyInput = true;
+    if (targetTheta < 0)
+        targetTheta = 0;
+    if (targetTheta > 0.5 * Math.PI)
+        targetTheta = 0.5 * Math.PI;
     setTimeout(() => { noKeyInput = false; }, transitionTime);
     smoothCameraSet(targetPhi, targetTheta, targetRadi);
 }
-let Xstart = 0;
-let Ystart = 0;
+// Mobile UIs
 export function onDocumentTouchStart(ev) {
-    Xstart = (ev.touches[0].clientX - windowHalfX + window.scrollX);
-    Ystart = -(ev.touches[0].clientY - windowHalfY + window.scrollY);
+    touchXstart = (ev.touches[0].clientX - windowHalfX + window.scrollX);
+    touchYstart = -(ev.touches[0].clientY - windowHalfY + window.scrollY);
 }
 export function onDocumentTouched(ev) {
     let clientX = (ev.changedTouches[0].clientX - windowHalfX + window.scrollX);
@@ -145,14 +158,13 @@ export function onDocumentTouched(ev) {
     vec.unproject(camera);
     vec.sub(camera.position).normalize();
     pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
-    onDocumentClick(new MouseEvent("dummy"));
-    //@ts-ignore
-    guideLine.material.opacity = 0;
-    //@ts-ignore
-    guideSphere.material.opacity = 0;
+    onDocumentClick(new MouseEvent("dummy")); // reuse PC version.
+    // //@ts-ignore
+    // guideLine.material.opacity = 0;
+    // //@ts-ignore
+    // guideSphere.material.opacity = 0;
 }
 export function onDocumentSwipe(ev) {
-    // define pos for mobile
     mouseX = (ev.changedTouches[0].clientX - windowHalfX + window.scrollX);
     mouseY = -(ev.changedTouches[0].clientY - windowHalfY + window.scrollY);
     vec.set(mouseX / containerWidth, mouseY / containerHeight, 1);
@@ -177,29 +189,29 @@ export function onDocumentSwipe(ev) {
         guideSphere.material.opacity = 0.5;
     }
     else {
-        //@ts-ignore
-        guideLine.material.opacity = 0;
-        //@ts-ignore
-        guideSphere.material.opacity = 0;
+        // //@ts-ignore
+        // guideLine.material.opacity = 0;
+        // //@ts-ignore
+        // guideSphere.material.opacity = 0;
     }
-    if (noKeyInput)
-        return;
     if (Math.abs(pos.x) > (side + 50) && Math.abs(pos.x) > (side + 50)) {
-        // outside the entry
-        if (Math.abs(mouseX - Xstart) > w_width * 0.3) {
-            // rotation for mobile
-            if (mouseX - Xstart < 0) {
-                targetPhi = currentPhi + 0.25 * Math.PI;
-            }
-            else {
-                targetPhi = currentPhi - 0.25 * Math.PI;
-            }
-            noKeyInput = true;
-            setTimeout(() => { noKeyInput = false; }, transitionTime);
-            smoothCameraSet(targetPhi, targetTheta, targetRadi);
-        }
+        targetPhi = currentPhi + (touchXstart - mouseX) * 0.001 * Math.PI;
+        targetTheta = currentTheta + (mouseY - touchYstart) * 0.001 * Math.PI;
+        if (targetTheta > 0.5 * Math.PI)
+            targetTheta = 0.5 * Math.PI;
+        else if (targetTheta < 0)
+            targetTheta = 0;
+        setCameraStatus(targetPhi, targetTheta, targetRadi);
+        touchXstart = mouseX;
+        touchYstart = mouseY;
+        currentPhi = targetPhi;
+        currentTheta = targetTheta;
     }
 }
+function isInRange(pos, side) {
+    return (pos.x < side) && (pos.x > -side) && (pos.y < side) && (pos.y > -side);
+}
+// Set camera orientaion
 function setCameraStatus(Phi, Theta, Radi) {
     let xyProjection = Radi * Math.sin(Theta);
     let zAxis = new Vector3(0, 0, 1);
@@ -225,21 +237,21 @@ export function smoothCameraSet(Phi, Theta, Radi) {
         }, 20);
     });
 }
+// Scoring.
 export function addGameScore(num) {
     gameScore += num;
 }
+// Display socre, next fruit.
 export function display() {
     upNextPanel.innerText = config[nextRank].name; //nextRank.toString();
     upNextPanel.style.color = "#" + new Color(config[nextRank].color).getHexString();
     // upNextPanel.style.fontSize = config[nextRank].radius.toString()+"px";
     scoreBoard.innerText = gameScore.toString();
 }
-// 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
-// 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
-// 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
-// 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
-// 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
-// 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
+/**
+ *
+ * Debugging, parameter adjust only
+ */
 export function debugging(debTab) {
     var _a;
     try {
@@ -302,8 +314,5 @@ export function onCamDebugChanged(event) {
     getAngle = Number(event.currentTarget.camTh.value);
     // setCameraStatus((getAngle) * Math.PI, 0.25* Math.PI, 900 * 1.4);
     setCameraStatus((getAngle) * Math.PI, 0.25 * Math.PI, camDistance);
-}
-function isInRange(pos, side) {
-    return (pos.x < side) && (pos.x > -side) && (pos.y < side) && (pos.y > -side);
 }
 //# sourceMappingURL=UI.js.map

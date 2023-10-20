@@ -10,100 +10,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import * as THREE from 'three';
 import * as PHYS from './physics.js';
 import * as UI from './UI.js';
-// import Stats from 'three/addons/libs/stats.module.js';
-let container; //, stats;
-container = document.getElementById('container');
+// three.js components
 export let camera;
 export let scene;
 export let renderer;
+// For future needs
 export let fps = 0;
 let then;
 let now;
+// guideLine mesh, Maybe it sould be moved to UI.ts?
 export let guideLine;
 export let guideSphere;
-const zAxis = new THREE.Vector3(0, 0, 1);
 let debTab = document.getElementsByClassName("debTab");
-// 🍉 Sphere configuration 🍉 (should be saved in .json, not hard-coded.)
-export let config = [
-    {
-        radius: 10,
-        mass: 1,
-        texture: "test",
-        color: new THREE.Color("crimson"),
-        name: "cherry"
-    },
-    {
-        radius: 15,
-        mass: 1,
-        texture: "test",
-        color: new THREE.Color("salmon"),
-        name: "strawberry"
-    },
-    {
-        radius: 20,
-        mass: 1,
-        texture: "test",
-        color: new THREE.Color("slateblue"),
-        name: "grape"
-    },
-    {
-        radius: 25,
-        mass: 1,
-        texture: "test",
-        color: new THREE.Color("orange"),
-        name: "mandarin"
-    },
-    {
-        radius: 30,
-        mass: 1,
-        texture: "test",
-        color: new THREE.Color("orangered"),
-        name: "persimmon"
-    },
-    {
-        radius: 35,
-        mass: 1,
-        texture: "test",
-        color: new THREE.Color("red"),
-        name: "apple"
-    },
-    {
-        radius: 40,
-        mass: 1,
-        texture: "test",
-        color: new THREE.Color("palegoldenrod"),
-        name: "pear"
-    },
-    {
-        radius: 45,
-        mass: 1,
-        texture: "test",
-        color: new THREE.Color("pink"),
-        name: "peach"
-    },
-    {
-        radius: 50,
-        mass: 1,
-        texture: "test",
-        color: new THREE.Color("yellow"),
-        name: "ananas or pineapple"
-    },
-    {
-        radius: 55,
-        mass: 1,
-        texture: "test",
-        color: new THREE.Color("chartreuse"),
-        name: "melon"
-    },
-    {
-        radius: 60,
-        mass: 1,
-        texture: "test",
-        color: new THREE.Color("darkgreen"),
-        name: "suika"
-    }
-];
+export let config;
 let loadedTextures = [];
+// to get mode selection.
 let url = new URL(window.location.href);
 console.log(url);
 loadConfig(url.searchParams.get("mode")).then(() => {
@@ -112,30 +33,29 @@ loadConfig(url.searchParams.get("mode")).then(() => {
 });
 function init() {
     var _a;
-    container = UI.container;
+    let container = UI.container;
     // camera = new THREE.OrthographicCamera();
     camera = new THREE.PerspectiveCamera(20, UI.w_width / UI.w_height, 1, 10000);
     UI.smoothCameraSet(UI.currentPhi, UI.currentTheta, UI.currentRadi);
+    // Initialize three.js scene.
     scene = new THREE.Scene();
     scene.background = new THREE.Color("skyblue");
+    // Add lights to the scene
     const light = new THREE.AmbientLight();
     // const light = new THREE.DirectionalLight(0xffffff, 3);
     light.position.set(0, 0, 1);
     scene.add(light);
+    // Add fruit box (boundary) to the scene
     let border = createBorder(PHYS.side, PHYS.height, scene);
+    // Add guideLine to the scene
     createGuide();
     createGuideSph();
-    // let mesh = createSph(2, 'test', [0, 0, 0.5 * PHYS.height], [0, 0, 0]);
-    // scene.add(mesh);
-    // Finally, (prepare) Renderer
+    // Initialize renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    // renderer.setPixelRatio(UI.w_ratio);
-    // renderer.setSize(UI.w_width, UI.w_height);
-    renderer.setPixelRatio(1);
-    renderer.setSize(300, 500);
-    UI.onWindowResize();
+    UI.onWindowResize(); // Let UI.ts do that.
+    // Add canvas DOM
     container.appendChild(renderer.domElement);
-    console.log(window.navigator.userAgent);
+    // Add input listeners
     let isMobile = detectMobileDevice(window.navigator.userAgent);
     if (isMobile) {
         document.addEventListener('touchstart', UI.onDocumentTouchStart);
@@ -151,40 +71,14 @@ function init() {
     // Debug UI
     (_a = document.getElementById("camPos")) === null || _a === void 0 ? void 0 : _a.addEventListener('input', UI.onCamDebugChanged);
 }
-// Refactor sph appearance part.
-// export function createSph(rank: number, textureName: string, position: number[], rotation: number[]) {
-//   let radius = 20; //config[rank].radius;
-//   // Create spheres
-//   // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
-//   let myGeo = new THREE.SphereGeometry(radius, 32, 16);
-//   let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
-//   let material = new THREE.MeshBasicMaterial({ map: texture });
-//   // Create mesh from Geometry & Material. ADD TO THE SCENE!
-//   let mesh = new THREE.Mesh(myGeo, material);
-//   let textured = new THREE.Mesh(myGeo, material);
-//   mesh.add(textured);
-//   let acceptRange = PHYS.side - radius * 0.51;
-//   if (position[0] < -acceptRange) position[0] = -acceptRange;
-//   else if (position[0] > acceptRange) position[0] = acceptRange;
-//   if (position[1] < -acceptRange) position[1] = -acceptRange;
-//   else if (position[1] > acceptRange) position[1] = acceptRange;
-//   mesh.position.set(position[0], position[1], position[2]); // Type of pos must be THREE.vector3
-//   mesh.rotation.set(rotation[0], rotation[1], rotation[2]); // Type of rotation must be THREE.euler
-//   const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], rank, radius);
-//   PHYS.sphs.push(physicalElem);
-//   return mesh;
-// }
 export function createColorSph(rank, position, rotation) {
     // Create spheres
-    // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
     let radius = config[rank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
-    // let textureName = config[rank].texture;
     let texture = loadedTextures[rank];
     let material = new THREE.MeshBasicMaterial({
         opacity: 1,
         transparent: true,
-        // color: config[rank].color,
         map: texture,
     });
     // Create mesh from Geometry & Material. ADD TO THE SCENE!
@@ -198,8 +92,9 @@ export function createColorSph(rank, position, rotation) {
         position[1] = -acceptRange;
     else if (position[1] > acceptRange)
         position[1] = acceptRange;
-    mesh.position.set(position[0], position[1], position[2]); // Type of pos must be THREE.vector3
-    mesh.rotation.set(rotation[0], rotation[1], rotation[2]); // Type of rotation must be THREE.euler
+    mesh.position.set(position[0], position[1], position[2]);
+    mesh.rotation.set(rotation[0], rotation[1], rotation[2]);
+    // Consider it physical object.
     const physicalElem = new PHYS.Physical(mesh, [0, 0, 0], rank, radius);
     PHYS.sphs.push(physicalElem);
     scene.add(mesh);
@@ -212,10 +107,8 @@ export function rankUpSph(sph) {
     }
     let radius = config[newRank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
-    // let textureName = config[newRank].texture;
     let texture = loadedTextures[newRank];
     let material = new THREE.MeshBasicMaterial({
-        // color: config[newRank].color,
         map: texture,
     });
     sph.mesh.geometry = myGeo;
@@ -265,10 +158,10 @@ function createBorder(side, height, scene) {
         });
         let mesh1 = new THREE.Mesh(myGeo1, material1);
         mesh1.rotateOnWorldAxis(rotaionArray[i], 0.5 * Math.PI);
-        // 충돌 따로 하드코딩 해서 구현
         mesh1.position.set(sideArray[i][0], sideArray[i][1], 0);
         scene.add(mesh1);
     }
+    // Note that it is not considered as physcial object.
 }
 function createGuide() {
     let myGeo = new THREE.CylinderGeometry(1, 1, PHYS.height, 5, 1, true);
@@ -277,46 +170,39 @@ function createGuide() {
     guideLine.position.set(0, 0, 0);
     guideLine.rotateX(Math.PI * 0.5);
     scene.add(guideLine);
+    // Note that it is not considered as physcial object.
 }
 function createGuideSph() {
     let radius = config[UI.currentRank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
-    // let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
-    // let textureName = config[UI.currentRank].texture;
     let texture = loadedTextures[UI.currentRank];
     let material = new THREE.MeshBasicMaterial({
         opacity: 0,
         transparent: true,
         depthWrite: false,
-        // color: config[UI.currentRank].color,
         map: texture
     });
-    // Create mesh from Geometry & Material. ADD TO THE SCENE!
-    // let mesh = new THREE.Mesh(myGeo, material); // this caused error.
     guideSphere = new THREE.Mesh(myGeo, material);
-    let textured = new THREE.Mesh(myGeo, material);
-    guideSphere.add(textured);
-    guideSphere.position.set(0, 0, 1000); // Type of pos must be THREE.vector3
-    guideSphere.rotation.set(0, 0, 0); // Type of rotation must be THREE.euler
+    guideSphere.position.set(0, 0, 1000);
+    guideSphere.rotation.set(0, 0, 0);
     scene.add(guideSphere);
+    // Note that it is not considered as physcial object.
 }
 export function renewGuideSphere() {
     guideSphere.clear();
     let radius = config[UI.currentRank].radius;
-    let myGeo = new THREE.SphereGeometry(radius, 32, 16); // new geo
-    // let textureName = config[UI.currentRank].texture;
+    let myGeo = new THREE.SphereGeometry(radius, 32, 16);
     let texture = loadedTextures[UI.currentRank];
     let material = new THREE.MeshBasicMaterial({
         opacity: 0.5,
         transparent: true,
         depthWrite: false,
-        // color: config[UI.currentRank].color,
         map: texture
     });
     guideSphere.geometry = myGeo;
     guideSphere.material = material;
 }
-// 얘가 한번만이 아닌 계속 작동하는 원리는 뭐야?
+// render each frame.
 function animate() {
     requestAnimationFrame(animate);
     render();
@@ -325,17 +211,26 @@ function animate() {
     fps = 1000 / (now - then);
     then = now;
 }
-// scene is referred at ACTUAL render function.
+// Physcis, UI, render.
 function render() {
     PHYS.physics(PHYS.sphs);
     UI.display();
     UI.debugging(debTab);
-    renderer.render(scene, camera); // OF COURSE we use prepared renderer.
+    renderer.render(scene, camera);
 }
+// Game over execution.
 export function gameOver() {
     PHYS.sphs.splice(0, PHYS.sphs.length);
+    document.removeEventListener('touchstart', UI.onDocumentTouchStart);
+    document.removeEventListener('touchmove', UI.onDocumentSwipe);
+    document.removeEventListener('touchend', UI.onDocumentTouched);
+    document.removeEventListener('mousemove', UI.onDocumentMouseMove);
+    document.removeEventListener('click', UI.onDocumentClick);
+    scene.remove(guideLine);
+    scene.remove(guideSphere);
     alert("game over.");
 }
+// loading config json.
 function loadConfig(mode) {
     return __awaiter(this, void 0, void 0, function* () {
         let fet = yield fetch("app_config.json");
@@ -343,13 +238,13 @@ function loadConfig(mode) {
             if (mode === "DEFAULT" || mode === null) {
                 config = body.DEFAULT;
                 for (let i = 0; i < config.length; i++) {
-                    loadedTextures.push(new THREE.TextureLoader().load('textures/' + config[i].texture + '.png'));
+                    loadedTextures.push(new THREE.TextureLoader().load('textures/' + mode + "/" + config[i].texture + '.png'));
                 }
             }
             else {
                 config = body.DEFAULT;
                 for (let i = 0; i < config.length; i++) {
-                    loadedTextures.push(new THREE.TextureLoader().load('textures/' + config[i].texture + '.png'));
+                    loadedTextures.push(new THREE.TextureLoader().load('textures/' + "DEFAULT/" + config[i].texture + '.png'));
                 }
             }
             PHYS.setPhysicalParameters(body.PHYSICS.floorElasticity, body.PHYSICS.sideWallElasticity, body.PHYSICS.interSphereElasticity, body.PHYSICS.sphereFriction, body.PHYSICS.stillness, body.PHYSICS.wallOverwrapCoeff, body.PHYSICS.overwrapRepulsion);

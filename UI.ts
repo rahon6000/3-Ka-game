@@ -8,54 +8,66 @@ import {
   guideSphere,
   renewGuideSphere,
   fps,
-  config
+  config,
 } from './script.js';
-import { sphs, side, height, dropMargin, setPhysicalParameters} from './physics.js';
-import { MathUtils, Vector3, Color } from 'three';
 
-let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0;
-export let container = document.getElementById('container') as HTMLElement;
+import { sphs, 
+  side, 
+  height, 
+  dropMargin, 
+  setPhysicalParameters
+} from './physics.js';
+
+import { MathUtils, 
+  Vector3, 
+  Color 
+} from 'three';
+
+let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0; // Client mouse positions
+export let container = document.getElementById('container') as HTMLElement; // container DOM
 export let w_width = container.clientWidth;
 export let w_height = container.clientHeight;
-export let w_ratio = w_height / w_width;  // Not sure this is right......
-
+export let w_ratio = w_height / w_width;
 let windowHalfX = container.clientWidth / 2 + container.offsetLeft;
 let windowHalfY = container.clientHeight / 2 + container.offsetTop;
 let containerWidth = container.clientWidth / 2;
 let containerHeight = container.clientHeight / 2;
-
-let upNextPanel = document.getElementById('upNext') as HTMLElement;
+let upNextPanel = document.getElementById('upNext') as HTMLElement; // Other UI panels DOM
 let scoreBoard = document.getElementById('scoreBoard') as HTMLElement;
 
+// Camera orientations and movement
 export let currentPhi = 0.25 * Math.PI + 0.001, targetPhi = 0.25 * Math.PI + 0.001;
 export let currentTheta = 0.25 * Math.PI, targetTheta = 0.25 * Math.PI;
 export let currentRadi = 900 * 1.5, targetRadi = 900 * 1.5;
 let transitionTime = 500;
 let noKeyInput = false;
 
+// Fruit rank (is it OK to be here...?) and game score.
 export let currentRank = MathUtils.randInt(0,5);
 let nextRank = MathUtils.randInt(0,5);
 let gameScore: number = 0;
 
+// Vectors used to map from client -> 3D world.
+let vec = new Vector3(); // recycle. normalized mouse position in camera view.
+let pos = new Vector3(); // recycle. world position under the mouse.
 
+// numbers for Mobile UIs
+let touchXstart = 0;
+let touchYstart = 0;
 
 export function onWindowResize() {
-
   windowHalfX = container.clientWidth / 2 + container.offsetLeft;
   windowHalfY = container.clientHeight / 2 + container.offsetTop;
   containerWidth = container.clientWidth / 2;
   containerHeight = container.clientHeight / 2;
 
-  // // 창 크기 변환시 camera 를 업데이트 한다.
+  // // Update cam
   camera.aspect = containerWidth / containerHeight;
   camera.updateProjectionMatrix();
-
   renderer.setSize(container.clientWidth , container.clientHeight );
-
 }
 
-let vec = new Vector3(); // recycle. normalized mouse position in camera view.
-let pos = new Vector3(); // recycle. world position under the mouse.
+// PC mouse UIs
 export function onDocumentMouseMove(event: MouseEvent) {
   mouseX = (event.clientX - windowHalfX + window.scrollX);
   mouseY = -(event.clientY - windowHalfY + window.scrollY);
@@ -84,7 +96,11 @@ export function onDocumentMouseMove(event: MouseEvent) {
 }
 
 export function onDocumentClick(event: MouseEvent) {
-  if ( sphs.length > 0 && sphs[sphs.length-1].mesh.position.z > (0.5 * height)) return;
+  if ( sphs.length > 0 && 
+    sphs[sphs.length-1].mesh.position.z > (0.5 * height) - (sphs[sphs.length-1].radius + config[currentRank].radius) &&
+    !sphs[sphs.length-1].isEverCollide) {
+      return;
+  }
   clickX = pos.x + (Math.random()-0.5);
   clickY = pos.y + (Math.random()-0.5);
   if (Math.abs(clickX) > (side + 50)) return;
@@ -134,36 +150,33 @@ export function onKeydown(event: KeyboardEvent) {
       break;
   }
   noKeyInput = true;
+  if (targetTheta < 0 ) targetTheta = 0;
+  if (targetTheta > 0.5 * Math.PI ) targetTheta = 0.5 * Math.PI;
   setTimeout(() => { noKeyInput = false; }, transitionTime);
   smoothCameraSet(targetPhi, targetTheta, targetRadi);
 }
 
-
-let Xstart = 0;
-let Ystart = 0;
+// Mobile UIs
 export function onDocumentTouchStart(this: Document, ev: TouchEvent) {
-  Xstart = (ev.touches[0].clientX - windowHalfX + window.scrollX);
-  Ystart = -(ev.touches[0].clientY - windowHalfY + window.scrollY);
-
+  touchXstart = (ev.touches[0].clientX - windowHalfX + window.scrollX);
+  touchYstart = -(ev.touches[0].clientY - windowHalfY + window.scrollY);
 }
 
-export function onDocumentTouched(this: Document, ev: TouchEvent) {
+export function onDocumentTouched(this: Document, ev: TouchEvent) { // finger off from screen
   let clientX = (ev.changedTouches[0].clientX - windowHalfX + window.scrollX);
   let clientY = -(ev.changedTouches[0].clientY - windowHalfY + window.scrollY);
   vec.set(clientX / containerWidth, clientY / containerHeight, 1);
   vec.unproject(camera);
   vec.sub(camera.position).normalize();
   pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
-  onDocumentClick( new MouseEvent("dummy") );
-  //@ts-ignore
-  guideLine.material.opacity = 0;
-  //@ts-ignore
-  guideSphere.material.opacity = 0;
+  onDocumentClick( new MouseEvent("dummy") ); // reuse PC version.
+  // //@ts-ignore
+  // guideLine.material.opacity = 0;
+  // //@ts-ignore
+  // guideSphere.material.opacity = 0;
 }
 
-export function onDocumentSwipe(this: Document, ev: TouchEvent) {
-  
-  // define pos for mobile
+export function onDocumentSwipe(this: Document, ev: TouchEvent) { // finger still in touch.
   mouseX = (ev.changedTouches[0].clientX - windowHalfX + window.scrollX);
   mouseY = -(ev.changedTouches[0].clientY - windowHalfY + window.scrollY);
   vec.set(mouseX / containerWidth, mouseY / containerHeight, 1);
@@ -184,28 +197,29 @@ export function onDocumentSwipe(this: Document, ev: TouchEvent) {
     //@ts-ignore
     guideSphere.material.opacity = 0.5;
   } else {
-    //@ts-ignore
-    guideLine.material.opacity = 0;
-    //@ts-ignore
-    guideSphere.material.opacity = 0;
+    // //@ts-ignore
+    // guideLine.material.opacity = 0;
+    // //@ts-ignore
+    // guideSphere.material.opacity = 0;
   } 
-  if (noKeyInput) return;
   if (Math.abs(pos.x) > (side + 50) && Math.abs(pos.x) > (side + 50)) {
-    // outside the entry
-    if( Math.abs(mouseX - Xstart) > w_width * 0.3) {
-      // rotation for mobile
-      if(mouseX - Xstart < 0) {
-        targetPhi = currentPhi + 0.25 * Math.PI;
-      } else {
-        targetPhi = currentPhi - 0.25 * Math.PI;
-      }
-      noKeyInput = true;
-      setTimeout(() => { noKeyInput = false; }, transitionTime);
-      smoothCameraSet(targetPhi, targetTheta, targetRadi);
-    }
+    targetPhi = currentPhi + (touchXstart - mouseX) * 0.001 * Math.PI;
+    targetTheta = currentTheta + (mouseY - touchYstart) * 0.001 * Math.PI;
+    if ( targetTheta > 0.5 * Math.PI) targetTheta = 0.5 * Math.PI;
+    else if ( targetTheta < 0) targetTheta = 0;
+    setCameraStatus(targetPhi, targetTheta, targetRadi);
+    touchXstart = mouseX;
+    touchYstart = mouseY;
+    currentPhi = targetPhi;
+    currentTheta = targetTheta;
   }
 }
 
+function isInRange(pos: Vector3, side: number):boolean {
+  return (pos.x < side) && (pos.x > -side) && (pos.y < side) && (pos.y > -side);
+}
+
+// Set camera orientaion
 function setCameraStatus(Phi: number, Theta: number, Radi: number) { // 더 간단하게 짤 수 있을텐데
   let xyProjection = Radi * Math.sin(Theta);
   let zAxis = new Vector3(0, 0, 1);
@@ -233,10 +247,12 @@ export async function smoothCameraSet(Phi: number, Theta: number, Radi: number) 
   }, 20);
 }
 
+// Scoring.
 export function addGameScore( num : number){
   gameScore += num;
 }
 
+// Display socre, next fruit.
 export function display(){
   upNextPanel.innerText = config[nextRank].name;//nextRank.toString();
   upNextPanel.style.color = "#" + new Color(config[nextRank].color).getHexString();
@@ -244,13 +260,11 @@ export function display(){
   scoreBoard.innerText = gameScore.toString();
 }
 
-// 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
-// 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
-// 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
-// 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
-// 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
-// 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 디버깅 
 
+/**
+ * 
+ * Debugging, parameter adjust only
+ */
 export function debugging(debTab: HTMLCollectionOf<Element>) {
   try {
     debTab.item(0)!.innerHTML = "(" + pos.x.toFixed(2) + ", " + pos.y.toFixed(2) + ")";
@@ -317,7 +331,4 @@ export function onCamDebugChanged(event: Event) {
   getAngle = Number(event.currentTarget!.camTh.value);
   // setCameraStatus((getAngle) * Math.PI, 0.25* Math.PI, 900 * 1.4);
   setCameraStatus((getAngle) * Math.PI, 0.25 * Math.PI, camDistance);
-}
-function isInRange(pos: Vector3, side: number):boolean {
-  return (pos.x < side) && (pos.x > -side) && (pos.y < side) && (pos.y > -side);
 }

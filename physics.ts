@@ -25,7 +25,7 @@ let overwrapRepulsion = 0.6; // = sphere repulsion
 let wallSpinFriction = 1.5;
 
 let tmp = new THREE.Vector3();
-// should consider frame
+
 export class Physical {
   mass: number;
   mesh: THREE.Mesh;
@@ -48,15 +48,15 @@ export class Physical {
     this.isEverCollide = false;
   }
 
-  getPosFromMesh() {
+  getPosFromMesh() { // only used in debug
     return [this.mesh.position.x, this.mesh.position.y, this.mesh.position.z];
   }
 
-  getVelFromMesh() {
+  getVelFromMesh() { // only used in debug
     return [this.vel.x, this.vel.y, this.vel.z];
   }
 
-  nextPosition() {
+  nextPosition() { 
     if (this.isCollide) {
       // precalculated movement. skip this frame.
       this.isCollide = false;
@@ -66,7 +66,6 @@ export class Physical {
       tmp = this.spin.clone();
       this.mesh.rotateOnWorldAxis(tmp.normalize(), this.spin.length());
     }
-
   }
 
   accelerate(acc: THREE.Vector3) {
@@ -100,9 +99,8 @@ export class Physical {
         this.mesh.position.z += this.vel.z;
       }
     }
-
     
-    // side wall edge
+    // side wall edge (at entry)
     let edgeDist = new THREE.Vector3();
     let edgeCollisionVector = new THREE.Vector3();
     if (this.mesh.position.z > halfHeight) {
@@ -136,7 +134,7 @@ export class Physical {
       }
     } else {
 
-      // side walls
+      // side walls (inside the box)
       let nextXpos = this.mesh.position.x + this.vel.x;
       overwrap = nextXpos + this.radius - side;
       if (overwrap > 0) {
@@ -196,11 +194,9 @@ export class Physical {
         }
       }
     }
-
-    // above code should be revised not to tunnel thru wall.
-    // If I precalculate here, what about nextPosition()...? OK i use flag.
   }
 
+  // Collision between fruits
   checkCollisionWith(x: Physical) {
     let objA = this.mesh.position.clone();
     let objB = x.mesh.position.clone();
@@ -235,8 +231,6 @@ export class Physical {
         (amplA * (2 * this.mass) + amplB * (x.mass - this.mass)) / massSum);
       this.vel.add(normalVelA.multiplyScalar(interSphereElasticity));
       x.vel.add(normalVelB.multiplyScalar(interSphereElasticity));
-      // this.vel.sub(normalVelA);
-      // x.vel.sub(normalVelB);
       this.mesh.position.add(this.vel);
       x.mesh.position.add(x.vel);
       let overwrap = (this.radius + x.radius) - tmp.subVectors(this.mesh.position, x.mesh.position).length();
@@ -263,7 +257,7 @@ export class Physical {
   }
 
   checkGameOver() {
-    if(this.isEverCollide && this.mesh.position.z > height + dropMargin) {
+    if(this.isEverCollide && this.mesh.position.z > 0.5 * height ) {
       gameOver();
     }
   }
@@ -280,6 +274,7 @@ export function setPhysicalParameters(floorE: number, wallE: number, spheE: numb
   overwrapRepulsion = spheRepulse;
 }
 
+// loop thru physcial objects.
 export function physics(elements: Physical[]) {
   for (let i = 0; i < elements.length; i++) {
 
@@ -300,11 +295,11 @@ export function physics(elements: Physical[]) {
   for (let i = 0; i < elements.length; i++) {
     try{
       elements[i].checkGameOver();
+      if (elements[i].isReservedToDestroyed) {
+        elements = elements.splice(i, 1);
+      }
     } catch (e){
       break;
-    }
-    if (elements[i].isReservedToDestroyed) {
-      elements = elements.splice(i, 1);
     }
   }
 }

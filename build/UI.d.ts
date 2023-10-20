@@ -16,6 +16,10 @@ export declare function onDocumentSwipe(this: Document, ev: TouchEvent): void;
 export declare function smoothCameraSet(Phi: number, Theta: number, Radi: number): Promise<void>;
 export declare function addGameScore(num: number): void;
 export declare function display(): void;
+/**
+ *
+ * Debugging, parameter adjust only
+ */
 export declare function debugging(debTab: HTMLCollectionOf<Element>): void;
 export declare let getAngle: number;
 export declare function onCamDebugChanged(event: Event): void;
