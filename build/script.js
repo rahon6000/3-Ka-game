@@ -103,6 +103,7 @@ export let config = [
         name: "suika"
     }
 ];
+let loadedTextures = [];
 let url = new URL(window.location.href);
 console.log(url);
 loadConfig(url.searchParams.get("mode")).then(() => {
@@ -178,8 +179,8 @@ export function createColorSph(rank, position, rotation) {
     // const myGeo = new THREE.IcosahedronGeometry(radius, 1); // 디폴트 UV 맵이 맘에 안듬.
     let radius = config[rank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
-    let textureName = config[rank].texture;
-    let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
+    // let textureName = config[rank].texture;
+    let texture = loadedTextures[rank];
     let material = new THREE.MeshBasicMaterial({
         opacity: 1,
         transparent: true,
@@ -211,8 +212,8 @@ export function rankUpSph(sph) {
     }
     let radius = config[newRank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
-    let textureName = config[newRank].texture;
-    let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
+    // let textureName = config[newRank].texture;
+    let texture = loadedTextures[newRank];
     let material = new THREE.MeshBasicMaterial({
         // color: config[newRank].color,
         map: texture,
@@ -281,8 +282,8 @@ function createGuideSph() {
     let radius = config[UI.currentRank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
     // let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
-    let textureName = config[UI.currentRank].texture;
-    let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
+    // let textureName = config[UI.currentRank].texture;
+    let texture = loadedTextures[UI.currentRank];
     let material = new THREE.MeshBasicMaterial({
         opacity: 0,
         transparent: true,
@@ -303,8 +304,8 @@ export function renewGuideSphere() {
     guideSphere.clear();
     let radius = config[UI.currentRank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16); // new geo
-    let textureName = config[UI.currentRank].texture;
-    let texture = new THREE.TextureLoader().load('textures/' + textureName + '.png');
+    // let textureName = config[UI.currentRank].texture;
+    let texture = loadedTextures[UI.currentRank];
     let material = new THREE.MeshBasicMaterial({
         opacity: 0.5,
         transparent: true,
@@ -341,9 +342,15 @@ function loadConfig(mode) {
         let waiter = fet.json().then((body) => {
             if (mode === "DEFAULT" || mode === null) {
                 config = body.DEFAULT;
+                for (let i = 0; i < config.length; i++) {
+                    loadedTextures.push(new THREE.TextureLoader().load('textures/' + config[i].texture + '.png'));
+                }
             }
             else {
                 config = body.DEFAULT;
+                for (let i = 0; i < config.length; i++) {
+                    loadedTextures.push(new THREE.TextureLoader().load('textures/' + config[i].texture + '.png'));
+                }
             }
             PHYS.setPhysicalParameters(body.PHYSICS.floorElasticity, body.PHYSICS.sideWallElasticity, body.PHYSICS.interSphereElasticity, body.PHYSICS.sphereFriction, body.PHYSICS.stillness, body.PHYSICS.wallOverwrapCoeff, body.PHYSICS.overwrapRepulsion);
             return 0;
