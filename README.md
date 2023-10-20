@@ -2,7 +2,9 @@
 
 ## Yet another suika game, but one extra dimension. <br> 또다른 수박게임, 그런데 한 차원 높은.
 
-[Web App link](https://blog.rahon.dev/PF/3-KaGame/)
+![cover](readme_cover.png)
+
+[🔗Web App link](https://blog.rahon.dev/PF/3-KaGame/)
 
 Feel free modify this. (I appreciate acknowledgement)
 
