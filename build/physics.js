@@ -9,7 +9,6 @@ export let G = new THREE.Vector3(0, 0, -gravity);
 export let sphs = []; // managing all fruits
 export let side = 100;
 export let height = 300;
-export let dropMargin = 30.5;
 let halfHeight = height * 0.5;
 // Physical properties...
 let floorElasticity = 0.5;

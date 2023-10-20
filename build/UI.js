@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { camera, renderer, 
 // createSph,
 createColorSph, guideLine, guideSphere, renewGuideSphere, fps, config, } from './script.js';
-import { sphs, side, height, dropMargin, setPhysicalParameters } from './physics.js';
+import { sphs, side, height, setPhysicalParameters } from './physics.js';
 import { MathUtils, Vector3, Color } from 'three';
 let mouseX = 0, mouseY = 0, clickX = 0, clickY = 0; // Client mouse positions
 export let container = document.getElementById('container'); // container DOM
@@ -32,6 +32,7 @@ let noKeyInput = false;
 // Fruit rank (is it OK to be here...?) and game score.
 export let currentRank = MathUtils.randInt(0, 5);
 let nextRank = MathUtils.randInt(0, 5);
+let dropMargin = 48;
 let gameScore = 0;
 // Vectors used to map from client -> 3D world.
 let vec = new Vector3(); // recycle. normalized mouse position in camera view.
@@ -48,6 +49,7 @@ export function onWindowResize() {
     camera.aspect = containerWidth / containerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(container.clientWidth, container.clientHeight);
+    dropMargin = config[4].radius + 1;
 }
 // PC mouse UIs
 export function onDocumentMouseMove(event) {
@@ -159,10 +161,10 @@ export function onDocumentTouched(ev) {
     vec.sub(camera.position).normalize();
     pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
     onDocumentClick(new MouseEvent("dummy")); // reuse PC version.
-    // //@ts-ignore
-    // guideLine.material.opacity = 0;
-    // //@ts-ignore
-    // guideSphere.material.opacity = 0;
+    //@ts-ignore
+    guideLine.material.opacity = 0;
+    //@ts-ignore
+    guideSphere.material.opacity = 0;
 }
 export function onDocumentSwipe(ev) {
     mouseX = (ev.changedTouches[0].clientX - windowHalfX + window.scrollX);
@@ -189,12 +191,6 @@ export function onDocumentSwipe(ev) {
         guideSphere.material.opacity = 0.5;
     }
     else {
-        // //@ts-ignore
-        // guideLine.material.opacity = 0;
-        // //@ts-ignore
-        // guideSphere.material.opacity = 0;
-    }
-    if (Math.abs(pos.x) > (side + 50) && Math.abs(pos.x) > (side + 50)) {
         targetPhi = currentPhi + (touchXstart - mouseX) * 0.001 * Math.PI;
         targetTheta = currentTheta + (mouseY - touchYstart) * 0.001 * Math.PI;
         if (targetTheta > 0.5 * Math.PI)

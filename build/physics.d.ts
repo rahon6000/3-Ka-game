@@ -3,7 +3,6 @@ export declare let G: THREE.Vector3;
 export declare let sphs: Physical[];
 export declare let side: number;
 export declare let height: number;
-export declare let dropMargin: number;
 export declare class Physical {
     mass: number;
     mesh: THREE.Mesh;

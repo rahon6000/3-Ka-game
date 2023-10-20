@@ -33,7 +33,6 @@ let loadedTextures:THREE.Texture[] = [];
 // to get mode selection.
 let url = new URL(window.location.href);
 
-console.log(url);
 loadConfig(url.searchParams.get("mode")).then(
   () => {
     init();

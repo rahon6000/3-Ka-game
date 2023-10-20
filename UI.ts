@@ -14,7 +14,6 @@ import {
 import { sphs, 
   side, 
   height, 
-  dropMargin, 
   setPhysicalParameters
 } from './physics.js';
 
@@ -45,6 +44,7 @@ let noKeyInput = false;
 // Fruit rank (is it OK to be here...?) and game score.
 export let currentRank = MathUtils.randInt(0,5);
 let nextRank = MathUtils.randInt(0,5);
+let dropMargin: number = 48;
 let gameScore: number = 0;
 
 // Vectors used to map from client -> 3D world.
@@ -65,6 +65,8 @@ export function onWindowResize() {
   camera.aspect = containerWidth / containerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(container.clientWidth , container.clientHeight );
+
+  dropMargin = config[4].radius+1;
 }
 
 // PC mouse UIs
@@ -170,10 +172,10 @@ export function onDocumentTouched(this: Document, ev: TouchEvent) { // finger of
   vec.sub(camera.position).normalize();
   pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
   onDocumentClick( new MouseEvent("dummy") ); // reuse PC version.
-  // //@ts-ignore
-  // guideLine.material.opacity = 0;
-  // //@ts-ignore
-  // guideSphere.material.opacity = 0;
+  //@ts-ignore
+  guideLine.material.opacity = 0;
+  //@ts-ignore
+  guideSphere.material.opacity = 0;
 }
 
 export function onDocumentSwipe(this: Document, ev: TouchEvent) { // finger still in touch.
@@ -197,12 +199,6 @@ export function onDocumentSwipe(this: Document, ev: TouchEvent) { // finger stil
     //@ts-ignore
     guideSphere.material.opacity = 0.5;
   } else {
-    // //@ts-ignore
-    // guideLine.material.opacity = 0;
-    // //@ts-ignore
-    // guideSphere.material.opacity = 0;
-  } 
-  if (Math.abs(pos.x) > (side + 50) && Math.abs(pos.x) > (side + 50)) {
     targetPhi = currentPhi + (touchXstart - mouseX) * 0.001 * Math.PI;
     targetTheta = currentTheta + (mouseY - touchYstart) * 0.001 * Math.PI;
     if ( targetTheta > 0.5 * Math.PI) targetTheta = 0.5 * Math.PI;

@@ -11,7 +11,6 @@ export let sphs: Physical[] = []; // managing all fruits
 
 export let side: number = 100;
 export let height: number = 300;
-export let dropMargin: number = 30.5;
 let halfHeight = height * 0.5;
 
 // Physical properties...

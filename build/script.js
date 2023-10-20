@@ -26,7 +26,6 @@ export let config;
 let loadedTextures = [];
 // to get mode selection.
 let url = new URL(window.location.href);
-console.log(url);
 loadConfig(url.searchParams.get("mode")).then(() => {
     init();
     animate();
@@ -235,7 +234,7 @@ function loadConfig(mode) {
     return __awaiter(this, void 0, void 0, function* () {
         let fet = yield fetch("app_config.json");
         let waiter = fet.json().then((body) => {
-            if (mode === "DEFAULT" || mode === null) {
+            if (mode === "DEFAULT") {
                 config = body.DEFAULT;
                 for (let i = 0; i < config.length; i++) {
                     loadedTextures.push(new THREE.TextureLoader().load('textures/' + mode + "/" + config[i].texture + '.png'));
