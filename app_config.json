@@ -1,4 +1,14 @@
 {
+  "PHYSICS" : {
+    "floorElasticity" : 0.5,
+    "sideWallElasticity" : 0.7,
+    "interSphereElasticity" : 0.5,
+    "sphereFriction" : 0.6,
+    "stillness" : 4,
+    "wallOverwrapCoeff" : 0.1,
+    "overwrapRepulsion" : 0.6,
+    "wallSpinFriction" : 1.5
+  },
   "DEFAULT" : [
     {
       "radius": 10,
@@ -8,70 +18,70 @@
       "name": "cherry"
     },
     {
-      "radius": 15,
+      "radius": 17,
       "mass": 1,
       "texture": "strawberry",
       "color": "salmon",
       "name": "strawberry"
     },
     { 
-      "radius": 20,
+      "radius": 24,
       "mass": 1,
       "texture": "grape",
       "color": "slateblue",
       "name": "grape"
     },
     { 
-      "radius": 25,
+      "radius": 31,
       "mass": 1,
       "texture": "orange",
       "color": "orange",
       "name": "mandarin"
     },
     { 
-      "radius": 30,
+      "radius": 38,
       "mass": 1,
       "texture": "persimmon",
       "color": "orangered",
       "name": "persimmon"
     },
     { 
-      "radius": 35,
+      "radius": 45,
       "mass": 1,
       "texture": "apple",
       "color": "red",
       "name": "apple"
     },
     {
-      "radius": 40,
+      "radius": 52,
       "mass": 1,
       "texture": "pear",
       "color": "palegoldenrod",
       "name": "pear"
     },
     { 
-      "radius": 45,
+      "radius": 59,
       "mass": 1,
       "texture": "peach",
       "color": "pink",
       "name": "peach"
     },
     {
-      "radius": 50,
+      "radius": 66,
       "mass": 1,
       "texture": "ananas",
       "color": "yellow",
       "name": "ananas or pineapple"
     },
     {
-      "radius": 55,
+      "radius": 73,
       "mass": 1,
       "texture": "melon",
       "color": "chartreuse",
       "name": "melon"
     },
     { 
-      "radius": 60,
+      "radius": 80,
       "mass": 1,
       "texture": "suika",
       "color": "darkgreen",

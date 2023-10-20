@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { gameOver, rankUpSph, scene } from "./script.js";
+import { gameOver, rankUpSph, killSph } from "./script.js";
 import { addGameScore } from "./UI.js";
 let gravity = 0.098; // At what framerate? 120?
 const zAxis = new THREE.Vector3(0, 0, 1);
@@ -227,15 +227,12 @@ export class Physical {
     sphereFusion(sph) {
         this.mesh.position.add(sph.mesh.position).multiplyScalar(0.5);
         this.vel.multiplyScalar(0);
+        this.spin.addVectors(this.spin, sph.spin).multiplyScalar(0.5);
         this.isCollide = true;
         rankUpSph(this);
-        sph.vel.multiplyScalar(0);
-        scene.remove(sph.mesh);
-        sph.isReservedToDestroyed = true;
-        sph.isCollide = true;
-        sph.isEverCollide = false;
         this.isEverCollide = true;
         addGameScore(this.rank ** 2);
+        killSph(sph);
     }
     checkGameOver() {
         if (this.isEverCollide && this.mesh.position.z > height + dropMargin) {

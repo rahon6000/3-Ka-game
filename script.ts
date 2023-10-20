@@ -99,7 +99,9 @@ export let config = [
   }
 ];
 
-loadConfig("default").then(
+let url = new URL(window.location.href);
+console.log(url);
+loadConfig(url.searchParams.get("mode")).then(
   () => {
     init();
     animate();
@@ -218,6 +220,10 @@ export function createColorSph(rank: number, position: number[], rotation: numbe
 
 export function rankUpSph(sph: PHYS.Physical) {
   let newRank = sph.rank + 1;
+  if( newRank > 10 ) {
+    killSph(sph);
+    return;
+  }
   let radius = config[newRank].radius;
   let myGeo = new THREE.SphereGeometry(radius, 32, 16);
   let textureName = config[newRank].texture;
@@ -230,6 +236,14 @@ export function rankUpSph(sph: PHYS.Physical) {
   sph.mesh.material = material;
   sph.radius = radius;
   sph.rank = newRank;
+}
+
+export function killSph(sph: PHYS.Physical) {
+  sph.vel.multiplyScalar(0);
+  sph.isReservedToDestroyed = true;
+  sph.isCollide = true;
+  sph.isEverCollide = false;
+  scene.remove(sph.mesh);
 }
 
 function createBorder(side: number, height: number, scene: THREE.Scene) { // should be consider it to fit exact size.
@@ -354,15 +368,24 @@ export function gameOver(){
   alert("game over.");
 }
 
-async function loadConfig(mode: string) {
+async function loadConfig(mode: string|null) {
   let fet = await fetch("app_config.json");
   let waiter = fet.json().then(
     (body) => {
-      if(mode === "DEFAULT"){
+      if(mode === "DEFAULT" || mode === null){
         config = body.DEFAULT;
       } else {
         config = body.DEFAULT;
       }
+      PHYS.setPhysicalParameters(
+        body.PHYSICS.floorElasticity,
+        body.PHYSICS.sideWallElasticity,
+        body.PHYSICS.interSphereElasticity,
+        body.PHYSICS.sphereFriction,
+        body.PHYSICS.stillness,
+        body.PHYSICS.wallOverwrapCoeff,
+        body.PHYSICS.overwrapRepulsion
+      );
       return 0;
     },
     (reject) => console.log(reject.message)

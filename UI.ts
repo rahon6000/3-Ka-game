@@ -57,14 +57,18 @@ export function onWindowResize() {
 let vec = new Vector3(); // recycle. normalized mouse position in camera view.
 let pos = new Vector3(); // recycle. world position under the mouse.
 export function onDocumentMouseMove(event: MouseEvent) {
-
   mouseX = (event.clientX - windowHalfX + window.scrollX);
   mouseY = -(event.clientY - windowHalfY + window.scrollY);
   vec.set(mouseX / containerWidth, mouseY / containerHeight, 1);
   vec.unproject(camera);
   vec.sub(camera.position).normalize();
   pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
-  if (isInRange(pos, side)) {
+  if (isInRange(pos, side + 50)) {
+    let margin = config[currentRank].radius * 0.75;
+    if (pos.x <= -side + margin) pos.x = -side +margin;
+    else if (pos.x >= side - margin) pos.x = side - margin;
+    if (pos.y <= -side + margin) pos.y = -side + margin;
+    else if (pos.y >= side - margin) pos.y = side - margin;
     //@ts-ignore
     guideLine.material.opacity = 0.5;
     guideLine.position.set(pos.x, pos.y, 0);
@@ -83,17 +87,14 @@ export function onDocumentClick(event: MouseEvent) {
   if ( sphs.length > 0 && sphs[sphs.length-1].mesh.position.z > (0.5 * height)) return;
   clickX = pos.x + (Math.random()-0.5);
   clickY = pos.y + (Math.random()-0.5);
-  let margin = 5;
   if (Math.abs(clickX) > (side + 50)) return;
   if (Math.abs(clickY) > (side + 50)) return;
-  if (clickX <= -side) clickX = -side + margin;
-  else if (clickX >= side) clickX = side - margin;
-  if (clickY <= -side) clickY = -side + margin;
-  else if (clickY >= side) clickY = side - margin;
-  // let newMesh = createSph(randomRadius(), 'test', 
-  //   [clickX, clickY, 0.5 * height + dropMargin], 
-  //   [Math.random()*2*Math.PI, Math.random()*2*Math.PI, 0]); // This might not be random.
-  let newMesh = createColorSph(currentRank,
+  let margin = config[currentRank].radius * 0.75;
+  if (clickX <= -side + margin) clickX = -side + margin;
+  else if (clickX >= side - margin) clickX = side - margin;
+  if (clickY <= -side + margin) clickY = -side + margin;
+  else if (clickY >= side - margin) clickY = side - margin;
+  createColorSph(currentRank,
     [clickX, clickY, 0.5 * height + dropMargin],
     [Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI, 0]); // This might not be random.
   
@@ -170,7 +171,12 @@ export function onDocumentSwipe(this: Document, ev: TouchEvent) {
   vec.sub(camera.position).normalize();
   pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
 
-  if (isInRange(pos, side)) {
+  if (isInRange(pos, side + 50)) {
+    let margin = config[currentRank].radius * 0.75;
+    if (pos.x <= -side + margin) pos.x = -side + +margin;
+    else if (pos.x >= side - margin) pos.x = side - margin;
+    if (pos.y <= -side + margin) pos.y = -side + margin;
+    else if (pos.y >= side - margin) pos.y = side - margin;
     //@ts-ignore
     guideLine.material.opacity = 0.5;
     guideLine.position.set(pos.x, pos.y, 0);

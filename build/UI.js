@@ -50,7 +50,16 @@ export function onDocumentMouseMove(event) {
     vec.unproject(camera);
     vec.sub(camera.position).normalize();
     pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
-    if (isInRange(pos, side)) {
+    if (isInRange(pos, side + 50)) {
+        let margin = config[currentRank].radius * 0.75;
+        if (pos.x <= -side + margin)
+            pos.x = -side + margin;
+        else if (pos.x >= side - margin)
+            pos.x = side - margin;
+        if (pos.y <= -side + margin)
+            pos.y = -side + margin;
+        else if (pos.y >= side - margin)
+            pos.y = side - margin;
         //@ts-ignore
         guideLine.material.opacity = 0.5;
         guideLine.position.set(pos.x, pos.y, 0);
@@ -70,23 +79,20 @@ export function onDocumentClick(event) {
         return;
     clickX = pos.x + (Math.random() - 0.5);
     clickY = pos.y + (Math.random() - 0.5);
-    let margin = 5;
     if (Math.abs(clickX) > (side + 50))
         return;
     if (Math.abs(clickY) > (side + 50))
         return;
-    if (clickX <= -side)
+    let margin = config[currentRank].radius * 0.75;
+    if (clickX <= -side + margin)
         clickX = -side + margin;
-    else if (clickX >= side)
+    else if (clickX >= side - margin)
         clickX = side - margin;
-    if (clickY <= -side)
+    if (clickY <= -side + margin)
         clickY = -side + margin;
-    else if (clickY >= side)
+    else if (clickY >= side - margin)
         clickY = side - margin;
-    // let newMesh = createSph(randomRadius(), 'test', 
-    //   [clickX, clickY, 0.5 * height + dropMargin], 
-    //   [Math.random()*2*Math.PI, Math.random()*2*Math.PI, 0]); // This might not be random.
-    let newMesh = createColorSph(currentRank, [clickX, clickY, 0.5 * height + dropMargin], [Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI, 0]); // This might not be random.
+    createColorSph(currentRank, [clickX, clickY, 0.5 * height + dropMargin], [Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI, 0]); // This might not be random.
     currentRank = nextRank;
     nextRank = MathUtils.randInt(0, 5);
     // // renew guide sphere.
@@ -153,7 +159,16 @@ export function onDocumentSwipe(ev) {
     vec.unproject(camera);
     vec.sub(camera.position).normalize();
     pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
-    if (isInRange(pos, side)) {
+    if (isInRange(pos, side + 50)) {
+        let margin = config[currentRank].radius * 0.75;
+        if (pos.x <= -side + margin)
+            pos.x = -side + +margin;
+        else if (pos.x >= side - margin)
+            pos.x = side - margin;
+        if (pos.y <= -side + margin)
+            pos.y = -side + margin;
+        else if (pos.y >= side - margin)
+            pos.y = side - margin;
         //@ts-ignore
         guideLine.material.opacity = 0.5;
         guideLine.position.set(pos.x, pos.y, 0);
