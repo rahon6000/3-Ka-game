@@ -267,7 +267,7 @@ async function loadConfig(mode: string|null) {
   let fet = await fetch("app_config.json");
   let waiter = fet.json().then(
     (body) => {
-      if(mode === "DEFAULT" || mode === null){
+      if( mode === "DEFAULT" ){
         config = body.DEFAULT;
         for(let i = 0; i < config.length; i++){
           loadedTextures.push(
