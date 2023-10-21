@@ -221,7 +221,6 @@ function render() {
 export function gameOver() {
     PHYS.sphs.splice(0, PHYS.sphs.length);
     document.removeEventListener('touchstart', UI.onDocumentTouchStart);
-    document.removeEventListener('touchmove', UI.onDocumentSwipe);
     document.removeEventListener('touchend', UI.onDocumentTouched);
     document.removeEventListener('mousemove', UI.onDocumentMouseMove);
     document.removeEventListener('click', UI.onDocumentClick);
