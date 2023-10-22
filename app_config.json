@@ -87,5 +87,85 @@
       "color": "darkgreen",
       "name": "suika"
     }
+  ],
+  
+  "BLUEARCHIVE" : [
+    {
+      "radius": 10,
+      "mass": 1,
+      "texture": "maki",
+      "color": "crimson",
+      "name": "maki"
+    },
+    {
+      "radius": 18,
+      "mass": 1,
+      "texture": "natsu",
+      "color": "salmon",
+      "name": "natsu"
+    },
+    { 
+      "radius": 26,
+      "mass": 1,
+      "texture": "chise",
+      "color": "slateblue",
+      "name": "chise"
+    },
+    { 
+      "radius": 34,
+      "mass": 1,
+      "texture": "kirino",
+      "color": "white",
+      "name": "kirino"
+    },
+    { 
+      "radius": 47,
+      "mass": 1,
+      "texture": "saya",
+      "color": "orangered",
+      "name": "saya"
+    },
+    { 
+      "radius": 51,
+      "mass": 100,
+      "texture": "yuuka",
+      "color": "red",
+      "name": "yuuka"
+    },
+    {
+      "radius": 59,
+      "mass": 1,
+      "texture": "sigure",
+      "color": "palegoldenrod",
+      "name": "sigure"
+    },
+    { 
+      "radius": 66,
+      "mass": 1,
+      "texture": "kanna",
+      "color": "pink",
+      "name": "kanna"
+    },
+    {
+      "radius": 74,
+      "mass": 1,
+      "texture": "megu",
+      "color": "yellow",
+      "name": "megu"
+    },
+    {
+      "radius": 82,
+      "mass": 1,
+      "texture": "nonomi",
+      "color": "chartreuse",
+      "name": "nonomi"
+    },
+    { 
+      "radius": 90,
+      "mass": 1,
+      "texture": "hasumi",
+      "color": "darkgreen",
+      "name": "hasumi"
+    }
   ]
 }
