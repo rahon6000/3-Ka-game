@@ -27,7 +27,7 @@ let scoreBoard = document.getElementById('scoreBoard');
 export let currentPhi = 0.25 * Math.PI + 0.001, targetPhi = 0.25 * Math.PI + 0.001;
 export let currentTheta = 0.25 * Math.PI, targetTheta = 0.25 * Math.PI;
 export let currentRadi = 900 * 1.5, targetRadi = 900 * 1.5;
-let transitionTime = 500;
+let transitionTime = 300;
 let noKeyInput = false;
 // Fruit rank (is it OK to be here...?) and game score.
 export let currentRank = MathUtils.randInt(0, 5);
@@ -124,10 +124,10 @@ export function onKeydown(event) {
             targetPhi = currentPhi + 0.25 * Math.PI;
             break;
         case 'Z':
-            targetRadi = currentRadi - 70;
+            targetRadi = currentRadi - 80;
             break;
         case 'C':
-            targetRadi = currentRadi + 70;
+            targetRadi = currentRadi + 80;
             break;
         case 'W':
             targetTheta = currentTheta - 0.1 * Math.PI;
@@ -145,6 +145,8 @@ export function onKeydown(event) {
         targetTheta = 0;
     if (targetTheta > 0.5 * Math.PI)
         targetTheta = 0.5 * Math.PI;
+    if (targetRadi < 100)
+        targetRadi = 100;
     setTimeout(() => { noKeyInput = false; }, transitionTime);
     smoothCameraSet(targetPhi, targetTheta, targetRadi);
 }

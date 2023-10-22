@@ -40,17 +40,21 @@ function init() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color("skyblue");
     // Add lights to the scene
-    const light = new THREE.AmbientLight();
-    // const light = new THREE.DirectionalLight(0xffffff, 3);
-    light.position.set(0, 0, 1);
+    // const light = new THREE.AmbientLight(0xffffff, 0.5);
+    const light = new THREE.DirectionalLight(0xffffff, 2.5);
+    light.position.set(900, 900, 1800);
     scene.add(light);
+    const ambLight = new THREE.AmbientLight();
+    scene.add(ambLight);
+    // const rectLight = new THREE.RectAreaLight(0xffffff, 2.5, 300, 300);
+    // scene.add(rectLight);
     // Add fruit box (boundary) to the scene
     let border = createBorder(PHYS.side, PHYS.height, scene);
     // Add guideLine to the scene
     createGuide();
     createGuideSph();
     // Initialize renderer
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ antialias: true, precision: "highp" });
     UI.onWindowResize(); // Let UI.ts do that.
     // Add canvas DOM
     container.appendChild(renderer.domElement);
@@ -75,7 +79,7 @@ export function createColorSph(rank, position, rotation) {
     let radius = config[rank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
     let texture = loadedTextures[rank];
-    let material = new THREE.MeshBasicMaterial({
+    let material = new THREE.MeshToonMaterial({
         opacity: 1,
         transparent: true,
         map: texture,
@@ -107,7 +111,7 @@ export function rankUpSph(sph) {
     let radius = config[newRank].radius;
     let myGeo = new THREE.SphereGeometry(radius, 32, 16);
     let texture = loadedTextures[newRank];
-    let material = new THREE.MeshBasicMaterial({
+    let material = new THREE.MeshToonMaterial({
         map: texture,
     });
     sph.mesh.geometry = myGeo;
@@ -124,7 +128,7 @@ export function killSph(sph) {
 }
 function createBorder(side, height, scene) {
     let thickness = 10;
-    let opacity = 0.2;
+    let opacity = 0.15;
     let myGeo = new THREE.BoxGeometry(2 * (side + thickness), 2 * (side + thickness), thickness, 1, 1, 1);
     let material = new THREE.MeshBasicMaterial({
         opacity: opacity,
@@ -233,10 +237,17 @@ function loadConfig(mode) {
     return __awaiter(this, void 0, void 0, function* () {
         let fet = yield fetch("app_config.json");
         let waiter = fet.json().then((body) => {
-            if (mode === "DEFAULT") {
+            console.log(mode);
+            if (mode === "DEFAULT" || mode === null) {
                 config = body.DEFAULT;
                 for (let i = 0; i < config.length; i++) {
-                    loadedTextures.push(new THREE.TextureLoader().load('textures/' + mode + "/" + config[i].texture + '.png'));
+                    loadedTextures.push(new THREE.TextureLoader().load('textures/' + "DEFAULT/" + config[i].texture + '.png'));
+                }
+            }
+            else if (mode === "BLUEARCHIVE") {
+                config = body.BLUEARCHIVE;
+                for (let i = 0; i < config.length; i++) {
+                    loadedTextures.push(new THREE.TextureLoader().load("textures/BLUEARCHIVE/" + config[i].texture + '.png'));
                 }
             }
             else {
