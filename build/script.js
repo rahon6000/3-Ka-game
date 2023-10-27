@@ -67,7 +67,8 @@ function init() {
     }
     else {
         document.addEventListener('mousemove', UI.onDocumentMouseMove);
-        document.addEventListener('click', UI.onDocumentClick);
+        document.addEventListener('mouseup', UI.onDocumentMouseUp);
+        document.addEventListener('mousedown', UI.onDocumentClick);
         window.addEventListener('keydown', UI.onKeydown);
     }
     window.addEventListener('resize', UI.onWindowResize);
@@ -237,7 +238,6 @@ function loadConfig(mode) {
     return __awaiter(this, void 0, void 0, function* () {
         let fet = yield fetch("app_config.json");
         let waiter = fet.json().then((body) => {
-            console.log(mode);
             if (mode === "DEFAULT" || mode === null) {
                 config = body.DEFAULT;
                 for (let i = 0; i < config.length; i++) {

@@ -40,6 +40,7 @@ export let currentTheta = 0.25 * Math.PI, targetTheta = 0.25 * Math.PI;
 export let currentRadi = 900 * 1.5, targetRadi = 900 * 1.5;
 let transitionTime = 300;
 let noKeyInput = false;
+let isButtonDown = false;
 
 // Fruit rank (is it OK to be here...?) and game score.
 export let currentRank = MathUtils.randInt(0,5);
@@ -70,10 +71,12 @@ export function onWindowResize() {
 }
 
 // PC mouse UIs
+let mouseMoveX;
+let mouseMoveY;
 export function onDocumentMouseMove(event: MouseEvent) {
-  mouseX = (event.clientX - windowHalfX + window.scrollX);
-  mouseY = -(event.clientY - windowHalfY + window.scrollY);
-  vec.set(mouseX / containerWidth, mouseY / containerHeight, 1);
+  mouseMoveX = (event.clientX - windowHalfX + window.scrollX);
+  mouseMoveY = -(event.clientY - windowHalfY + window.scrollY);
+  vec.set(mouseMoveX / containerWidth, mouseMoveY / containerHeight, 1);
   vec.unproject(camera);
   vec.sub(camera.position).normalize();
   pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
@@ -94,10 +97,30 @@ export function onDocumentMouseMove(event: MouseEvent) {
     guideLine.material.opacity = 0;
     //@ts-ignore
     guideSphere.material.opacity = 0;
+    // CameraSetting
+    if(isButtonDown){
+      targetPhi = currentPhi + (mouseX - mouseMoveX) * 0.001 * Math.PI;
+      targetTheta = currentTheta + (mouseMoveY - mouseY) * 0.001 * Math.PI;
+      if ( targetTheta > 0.5 * Math.PI) targetTheta = 0.5 * Math.PI;
+      else if ( targetTheta < 0) targetTheta = 0;
+      setCameraStatus(targetPhi, targetTheta, targetRadi);
+      mouseX = mouseMoveX;
+      mouseY = mouseMoveY;
+      currentPhi = targetPhi;
+      currentTheta = targetTheta;
+      
+    }
   }
 }
 
 export function onDocumentClick(event: MouseEvent) {
+  isButtonDown = true;
+  mouseX = (event.clientX - windowHalfX + window.scrollX);
+  mouseY = -(event.clientY - windowHalfY + window.scrollY);
+  vec.set(mouseX / containerWidth, mouseY / containerHeight, 1);
+  vec.unproject(camera);
+  vec.sub(camera.position).normalize();
+  pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
   if ( sphs.length > 0 && 
     sphs[sphs.length-1].mesh.position.z > (0.5 * height) - (sphs[sphs.length-1].radius + config[currentRank].radius) &&
     !sphs[sphs.length-1].isEverCollide) {
@@ -120,6 +143,11 @@ export function onDocumentClick(event: MouseEvent) {
   nextRank = MathUtils.randInt(0,5);
   // // renew guide sphere.
   renewGuideSphere();
+}
+
+export function onDocumentMouseUp(event: MouseEvent){
+  console.log("up");
+  isButtonDown = false;
 }
 
 export function onKeydown(event: KeyboardEvent) {

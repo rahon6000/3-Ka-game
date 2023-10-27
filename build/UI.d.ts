@@ -9,6 +9,7 @@ export declare let currentRank: number;
 export declare function onWindowResize(): void;
 export declare function onDocumentMouseMove(event: MouseEvent): void;
 export declare function onDocumentClick(event: MouseEvent): void;
+export declare function onDocumentMouseUp(event: MouseEvent): void;
 export declare function onKeydown(event: KeyboardEvent): void;
 export declare function onDocumentTouchStart(this: Document, ev: TouchEvent): void;
 export declare function onDocumentTouched(this: Document, ev: TouchEvent): void;

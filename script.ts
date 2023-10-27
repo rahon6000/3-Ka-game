@@ -83,7 +83,8 @@ function init() {
     document.addEventListener('touchend', UI.onDocumentTouched);
   } else {
     document.addEventListener('mousemove', UI.onDocumentMouseMove);
-    document.addEventListener('click', UI.onDocumentClick);
+    document.addEventListener('mouseup', UI.onDocumentMouseUp);
+    document.addEventListener('mousedown', UI.onDocumentClick);
     window.addEventListener('keydown', UI.onKeydown);
   }
 
@@ -269,7 +270,6 @@ async function loadConfig(mode: string|null) {
   let fet = await fetch("app_config.json");
   let waiter = fet.json().then(
     (body) => {
-      console.log(mode);
       if( mode === "DEFAULT" || mode === null){
         config = body.DEFAULT;
         for(let i = 0; i < config.length; i++){
