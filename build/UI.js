@@ -102,12 +102,12 @@ export function onDocumentMouseMove(event) {
 }
 export function onDocumentClick(event) {
     isButtonDown = true;
-    mouseX = (event.clientX - windowHalfX + window.scrollX);
-    mouseY = -(event.clientY - windowHalfY + window.scrollY);
-    vec.set(mouseX / containerWidth, mouseY / containerHeight, 1);
-    vec.unproject(camera);
-    vec.sub(camera.position).normalize();
-    pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
+    // mouseX = (event.clientX - windowHalfX + window.scrollX);
+    // mouseY = -(event.clientY - windowHalfY + window.scrollY);
+    // vec.set(mouseX / containerWidth, mouseY / containerHeight, 1);
+    // vec.unproject(camera);
+    // vec.sub(camera.position).normalize();
+    // pos.copy(camera.position).add(vec.multiplyScalar((0.5 * height + dropMargin - camera.position.z) / vec.z));
     if (sphs.length > 0 &&
         sphs[sphs.length - 1].mesh.position.z > (0.5 * height) - (sphs[sphs.length - 1].radius + config[currentRank].radius) &&
         !sphs[sphs.length - 1].isEverCollide) {

@@ -41,10 +41,10 @@ function init() {
     scene.background = new THREE.Color("skyblue");
     // Add lights to the scene
     // const light = new THREE.AmbientLight(0xffffff, 0.5);
-    const light = new THREE.DirectionalLight(0xffffff, 2.5);
+    const light = new THREE.DirectionalLight(0xffffff, 0.8);
     light.position.set(900, 900, 1800);
     scene.add(light);
-    const ambLight = new THREE.AmbientLight();
+    const ambLight = new THREE.AmbientLight(0xffffff, 0.2);
     scene.add(ambLight);
     // const rectLight = new THREE.RectAreaLight(0xffffff, 2.5, 300, 300);
     // scene.add(rectLight);
