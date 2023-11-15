@@ -115,8 +115,8 @@ export function onDocumentMouseMove(event: MouseEvent) {
 
 export function onDocumentClick(event: MouseEvent) {
   isButtonDown = true;
-  // mouseX = (event.clientX - windowHalfX + window.scrollX);
-  // mouseY = -(event.clientY - windowHalfY + window.scrollY);
+  mouseX = (event.clientX - windowHalfX + window.scrollX);
+  mouseY = -(event.clientY - windowHalfY + window.scrollY);
   // vec.set(mouseX / containerWidth, mouseY / containerHeight, 1);
   // vec.unproject(camera);
   // vec.sub(camera.position).normalize();
